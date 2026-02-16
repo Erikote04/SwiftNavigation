@@ -1,0 +1,71 @@
+name: Publish DocC
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish-docc:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Generate DocC static site
+        working-directory: SwiftNavigation
+        run: |
+          swift package \
+            --allow-writing-to-directory ./docs-static \
+            generate-documentation \
+            --target SwiftNavigation \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --hosting-base-path "${{ github.event.repository.name }}" \
+            --output-path ./docs-static
+
+      - name: Add root redirect
+        working-directory: SwiftNavigation/docs-static
+        run: |
+          cat > index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta http-equiv="refresh" content="0; url=./documentation/swiftnavigation/">
+            <title>SwiftNavigation Documentation</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="./documentation/swiftnavigation/">SwiftNavigation documentation</a>...</p>
+          </body>
+          </html>
+          HTML
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: SwiftNavigation/docs-static
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
