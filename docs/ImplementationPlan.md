@@ -5,32 +5,32 @@ All commit messages must follow Semantic Release conventions and be written in E
 
 ## Delivery Phases
 
-- [ ] `feat(core): add type-safe navigation state primitives`
+- [x] `feat(core): add type-safe navigation state primitives`
   - Add route constraints (`Codable`, `Hashable`, `Sendable`) and state models.
   - Add modal presentation state structures.
   - Ensure state snapshot is fully exportable and importable.
 
-- [ ] `feat(coordinator): implement main-actor navigation coordinator`
+- [x] `feat(coordinator): implement main-actor navigation coordinator`
   - Add `@Observable` + `@MainActor` coordinator.
   - Implement stack operations (`push`, `pop`, `popToRoot`, `popToView`).
   - Implement modal operations with nested modal support.
   - Add child-coordinator lifecycle cleanup APIs.
 
-- [ ] `feat(routing-view): add SwiftUI routing wrapper with nested modal support`
+- [x] `feat(routing-view): add SwiftUI routing wrapper with nested modal support`
   - Add `RoutingView` wrapper.
   - Integrate `NavigationStack`, `.sheet`, and `.fullScreenCover`.
   - Keep state in sync when the system dismisses modals via gesture.
 
-- [ ] `feat(integration): add environment injection and protocol-based routing abstractions`
+- [x] `feat(integration): add environment injection and protocol-based routing abstractions`
   - Add environment-based coordinator injection helpers.
   - Add protocol abstractions for MVVM-C decoupling.
   - Add deep-link reconstruction interfaces.
 
-- [ ] `test(navigation): cover stack, modal recursion, restoration, and deeplink flows`
+- [x] `test(navigation): cover stack, modal recursion, restoration, and deeplink flows`
   - Add Swift Testing coverage for stack and modal behaviors.
   - Add async/main-actor focused tests for coordinator safety.
 
-- [ ] `docs(docc): add complete DocC guides and best-practice documentation`
+- [x] `docs(docc): add complete DocC guides and best-practice documentation`
   - Add a DocC catalog in English.
   - Add quick start, MVVM-C integration tutorial, restoration guide, and deep-linking guide.
 
