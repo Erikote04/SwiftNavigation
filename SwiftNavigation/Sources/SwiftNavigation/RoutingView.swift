@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Root SwiftUI wrapper that binds a `NavigationCoordinator` to native navigation APIs.
 @available(iOS 17, macOS 14, *)
+@MainActor
 public struct RoutingView<
     StackRoute: NavigationRoute,
     ModalRoute: NavigationRoute,
@@ -47,6 +48,7 @@ public struct RoutingView<
 
 /// Internal recursive presenter that allows unlimited nested modal layers.
 @available(iOS 17, macOS 14, *)
+@MainActor
 private struct ModalLayerHost<
     StackRoute: NavigationRoute,
     ModalRoute: NavigationRoute,
