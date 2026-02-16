@@ -1,23 +1,23 @@
 import Foundation
 
-struct APIPageInfo: Decodable, Sendable {
+nonisolated struct APIPageInfo: Decodable, Sendable {
     let count: Int
     let pages: Int
     let next: String?
     let prev: String?
 }
 
-struct APIListResponse<Value: Decodable & Sendable>: Decodable, Sendable {
+nonisolated struct APIListResponse<Value: Decodable & Sendable>: Decodable, Sendable {
     let info: APIPageInfo
     let results: [Value]
 }
 
-struct APINamedResource: Decodable, Sendable {
+nonisolated struct APINamedResource: Decodable, Sendable {
     let name: String
     let url: String
 }
 
-struct APICharacter: Decodable, Sendable, Identifiable {
+nonisolated struct APICharacter: Decodable, Sendable, Identifiable {
     let id: Int
     let name: String
     let status: String
@@ -30,7 +30,7 @@ struct APICharacter: Decodable, Sendable, Identifiable {
     let episode: [String]
 }
 
-struct APIEpisode: Decodable, Sendable, Identifiable {
+nonisolated struct APIEpisode: Decodable, Sendable, Identifiable {
     let id: Int
     let name: String
     let airDate: String
@@ -46,7 +46,7 @@ struct APIEpisode: Decodable, Sendable, Identifiable {
     }
 }
 
-struct APILocation: Decodable, Sendable, Identifiable {
+nonisolated struct APILocation: Decodable, Sendable, Identifiable {
     let id: Int
     let name: String
     let type: String
@@ -79,7 +79,7 @@ extension APILocation {
     }
 }
 
-func extractID(from absoluteURL: String) -> Int? {
+nonisolated func extractID(from absoluteURL: String) -> Int? {
     URL(string: absoluteURL)
         .flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
         .flatMap { $0.path.split(separator: "/").last }
