@@ -47,20 +47,21 @@ Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs
 
 ## Installation
 
-This repository currently stores the Swift package inside the `SwiftNavigation/` folder.
-
-### Add as Local Package (recommended for now)
+### Xcode
 
 In Xcode:
 
 1. `File` -> `Add Packages...`
-2. Click `Add Local...`
-3. Select `/path/to/Swift-Navigation-Layer/SwiftNavigation`
+2. Enter: `https://github.com/Erikote04/SwiftNavigation`
+3. Select `Up to Next Major Version` and set it to `1.0.0`
+4. Add the `SwiftNavigation` product to your target
 
-### Add from `Package.swift` in another local project
+### Package.swift
 
 ```swift
-.package(path: "../Swift-Navigation-Layer/SwiftNavigation")
+dependencies: [
+    .package(url: "https://github.com/Erikote04/SwiftNavigation", from: "1.0.0")
+]
 ```
 
 ## Quick Start
