@@ -37,7 +37,7 @@ jobs:
             --target SwiftNavigation \
             --disable-indexing \
             --transform-for-static-hosting \
-            --hosting-base-path Swift-Navigation-Layer \
+            --hosting-base-path "${{ github.event.repository.name }}" \
             --output-path .docs
 
       - name: Upload Pages artifact
