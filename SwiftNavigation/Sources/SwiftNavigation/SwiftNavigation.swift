@@ -1,2 +1,2 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
+/// Public namespace for package-level documentation.
+public enum SwiftNavigation {}
