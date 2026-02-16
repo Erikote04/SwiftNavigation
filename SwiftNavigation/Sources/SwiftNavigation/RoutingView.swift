@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Root SwiftUI wrapper that binds a `NavigationCoordinator` to native navigation APIs.
 @available(iOS 17, macOS 14, *)
 public struct RoutingView<
     StackRoute: NavigationRoute,
@@ -14,6 +15,13 @@ public struct RoutingView<
     private let stackDestination: (StackRoute) -> StackDestination
     private let modalDestination: (ModalRoute) -> ModalDestination
 
+    /// Creates a routing container that renders stack and modal destinations.
+    ///
+    /// - Parameters:
+    ///   - coordinator: Coordinator that owns stack and modal navigation state.
+    ///   - root: Root content rendered as the base of the root `NavigationStack`.
+    ///   - destination: Builder for root stack route destinations.
+    ///   - modalDestination: Builder for modal root and modal stack destinations.
     public init(
         coordinator: NavigationCoordinator<StackRoute, ModalRoute>,
         @ViewBuilder root: @escaping () -> Root,
@@ -26,6 +34,7 @@ public struct RoutingView<
         self.modalDestination = modalDestination
     }
 
+    /// Renders the root stack and recursively attaches nested modal presenters.
     public var body: some View {
         ModalLayerHost(coordinator: coordinator, depth: 0, modalDestination: modalDestination) {
             NavigationStack(path: $coordinator.stack) {
@@ -36,6 +45,7 @@ public struct RoutingView<
     }
 }
 
+/// Internal recursive presenter that allows unlimited nested modal layers.
 @available(iOS 17, macOS 14, *)
 private struct ModalLayerHost<
     StackRoute: NavigationRoute,
@@ -47,6 +57,13 @@ private struct ModalLayerHost<
     let modalDestination: (ModalRoute) -> ModalDestination
     let content: AnyView
 
+    /// Creates a recursive modal host layer.
+    ///
+    /// - Parameters:
+    ///   - coordinator: Coordinator containing current navigation state.
+    ///   - depth: Modal depth represented by this host instance.
+    ///   - modalDestination: Destination builder for modal routes.
+    ///   - content: View content wrapped by this modal host layer.
     init<Content: View>(
         coordinator: NavigationCoordinator<StackRoute, ModalRoute>,
         depth: Int,
@@ -59,6 +76,7 @@ private struct ModalLayerHost<
         self.content = AnyView(content())
     }
 
+    /// Renders content and attaches presentation modifiers for the current modal depth.
     var body: some View {
         #if os(iOS)
         content
@@ -76,6 +94,7 @@ private struct ModalLayerHost<
         #endif
     }
 
+    /// Binding for a sheet modal at the current depth.
     private var sheetBinding: Binding<ModalPresentation<ModalRoute>?> {
         Binding(
             get: {
@@ -97,6 +116,7 @@ private struct ModalLayerHost<
         )
     }
 
+    /// Binding for a full-screen modal at the current depth.
     private var fullScreenBinding: Binding<ModalPresentation<ModalRoute>?> {
         Binding(
             get: {
@@ -118,6 +138,10 @@ private struct ModalLayerHost<
         )
     }
 
+    /// Builds modal content and recursively enables nested modal presentations.
+    ///
+    /// - Parameter modal: Modal snapshot currently being presented.
+    /// - Returns: A modal root wrapped in its own `NavigationStack`.
     @ViewBuilder
     private func modalContent(_ modal: ModalPresentation<ModalRoute>) -> some View {
         ModalLayerHost(coordinator: coordinator, depth: depth + 1, modalDestination: modalDestination) {
@@ -128,6 +152,10 @@ private struct ModalLayerHost<
         }
     }
 
+    /// Creates a binding to a modal flow's internal navigation path.
+    ///
+    /// - Parameter modalDepth: Index of the modal flow in the modal stack.
+    /// - Returns: Two-way binding to the modal flow's internal path.
     private func modalPathBinding(at modalDepth: Int) -> Binding<[ModalRoute]> {
         Binding(
             get: {
