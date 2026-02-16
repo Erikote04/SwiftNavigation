@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BB55382E2F4366F300E58BC2 /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = BB55382D2F4366F300E58BC2 /* SwiftNavigation */; };
+		BB5538312F43671900E58BC2 /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BB5538302F43671900E58BC2 /* SwiftNetwork */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftNavigationSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB55382E2F4366F300E58BC2 /* SwiftNavigation in Frameworks */,
+				BB5538312F43671900E58BC2 /* SwiftNetwork in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = SwiftNavigationSampleApp;
 			packageProductDependencies = (
+				BB55382D2F4366F300E58BC2 /* SwiftNavigation */,
+				BB5538302F43671900E58BC2 /* SwiftNetwork */,
 			);
 			productName = SwiftNavigationSampleApp;
 			productReference = BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */;
@@ -94,6 +103,10 @@
 			);
 			mainGroup = BB5538152F4366B100E58BC2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB55382C2F4366F300E58BC2 /* XCLocalSwiftPackageReference "../../SwiftNavigation" */,
+				BB55382F2F43671900E58BC2 /* XCLocalSwiftPackageReference "../../../Swift-Network-Layer/SwiftNetwork" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB55381F2F4366B100E58BC2 /* Products */;
 			projectDirPath = "";
@@ -332,6 +345,28 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BB55382C2F4366F300E58BC2 /* XCLocalSwiftPackageReference "../../SwiftNavigation" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../SwiftNavigation;
+		};
+		BB55382F2F43671900E58BC2 /* XCLocalSwiftPackageReference "../../../Swift-Network-Layer/SwiftNetwork" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../Swift-Network-Layer/SwiftNetwork";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB55382D2F4366F300E58BC2 /* SwiftNavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftNavigation;
+		};
+		BB5538302F43671900E58BC2 /* SwiftNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftNetwork;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BB5538162F4366B100E58BC2 /* Project object */;
 }
