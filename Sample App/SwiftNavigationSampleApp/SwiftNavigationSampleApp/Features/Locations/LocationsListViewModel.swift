@@ -5,13 +5,13 @@ import Observation
 @Observable
 final class LocationsListViewModel {
     private let service: RickMortyService
-    private weak var router: (any ExploreRouting)?
+    private weak var router: (any LocationsRouting)?
 
     private(set) var locations: [LocationRouteData] = []
     private(set) var isLoading = false
     var errorMessage: String?
 
-    init(service: RickMortyService, router: any ExploreRouting) {
+    init(service: RickMortyService, router: any LocationsRouting) {
         self.service = service
         self.router = router
     }
@@ -53,13 +53,13 @@ final class LocationDetailViewModel {
     let route: LocationRouteData
 
     private let service: RickMortyService
-    private weak var router: (any ExploreRouting)?
+    private weak var router: (any LocationsRouting)?
 
     private(set) var location: APILocation?
     private(set) var isLoading = false
     var errorMessage: String?
 
-    init(route: LocationRouteData, service: RickMortyService, router: any ExploreRouting) {
+    init(route: LocationRouteData, service: RickMortyService, router: any LocationsRouting) {
         self.route = route
         self.service = service
         self.router = router

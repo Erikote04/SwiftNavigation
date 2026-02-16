@@ -18,11 +18,11 @@ struct AppRootView: View {
             root: {
                 TabView(selection: $selectedTab) {
                     Tab("Characters", systemImage: "person.3.fill", value: .characters) {
-                        CharactersTabView(viewModel: appCoordinator.charactersViewModel)
+                        CharactersListView(viewModel: appCoordinator.charactersViewModel)
                     }
 
-                    Tab("Explore", systemImage: "globe", value: .explore) {
-                        LocationsTabView(viewModel: appCoordinator.locationsViewModel)
+                    Tab("Locations", systemImage: "globe", value: .explore) {
+                        LocationsListView(viewModel: appCoordinator.locationsViewModel)
                     }
                 }
             },
