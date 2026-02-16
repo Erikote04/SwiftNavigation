@@ -1,17 +1,13 @@
-//
-//  SwiftNavigationSampleAppApp.swift
-//  SwiftNavigationSampleApp
-//
-//  Created by Erik Sebastian de Erice Jerez on 16/2/26.
-//
-
 import SwiftUI
 
 @main
+@MainActor
 struct SwiftNavigationSampleAppApp: App {
+    @State private var appCoordinator = AppCoordinator()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppRootView(appCoordinator: appCoordinator)
         }
     }
 }
