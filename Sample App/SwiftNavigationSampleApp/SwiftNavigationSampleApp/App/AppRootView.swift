@@ -18,15 +18,17 @@ struct AppRootView: View {
             root: {
                 TabView(selection: $selectedTab) {
                     Tab("Characters", systemImage: "person.3.fill", value: .characters) {
-                        NavigationStack {
-                            CharactersListView(viewModel: appCoordinator.charactersViewModel)
-                        }
+                        CharactersListView(viewModel: appCoordinator.charactersViewModel)
                     }
 
                     Tab("Locations", systemImage: "globe", value: .explore) {
-                        NavigationStack {
-                            LocationsListView(viewModel: appCoordinator.locationsViewModel)
-                        }
+                        LocationsListView(viewModel: appCoordinator.locationsViewModel)
+                    }
+                }
+                .navigationTitle(rootNavigationTitle)
+                .toolbar {
+                    if appCoordinator.navigationCoordinator.stack.isEmpty {
+                        rootToolbarContent
                     }
                 }
             },
@@ -76,5 +78,35 @@ struct AppRootView: View {
             }
         )
         .navigationCoordinator(appCoordinator.navigationCoordinator)
+    }
+
+    @ToolbarContentBuilder
+    private var rootToolbarContent: some ToolbarContent {
+        switch selectedTab {
+        case .characters:
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Reload") {
+                    Task {
+                        await appCoordinator.charactersViewModel.refresh()
+                    }
+                }
+            }
+
+        case .explore:
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Settings") {
+                    appCoordinator.locationsViewModel.didTapSettings()
+                }
+            }
+        }
+    }
+
+    private var rootNavigationTitle: String {
+        switch selectedTab {
+        case .characters:
+            "Characters"
+        case .explore:
+            "Locations"
+        }
     }
 }

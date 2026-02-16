@@ -23,14 +23,6 @@ struct LocationsListView: View {
                 ProgressView("Loading locations...")
             }
         }
-        .navigationTitle("Locations")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Settings") {
-                    viewModel.didTapSettings()
-                }
-            }
-        }
         .refreshable {
             await viewModel.refresh()
         }
@@ -59,5 +51,4 @@ struct LocationsListView: View {
         }
     }
 }
-
 

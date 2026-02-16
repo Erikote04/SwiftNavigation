@@ -28,16 +28,6 @@ struct CharactersListView: View {
                 ProgressView("Loading characters...")
             }
         }
-        .navigationTitle("Characters")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Reload") {
-                    Task {
-                        await viewModel.refresh()
-                    }
-                }
-            }
-        }
         .refreshable {
             await viewModel.refresh()
         }
