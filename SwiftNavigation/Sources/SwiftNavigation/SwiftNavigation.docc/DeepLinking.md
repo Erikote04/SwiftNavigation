@@ -8,7 +8,7 @@ Use resolvers to translate URLs or notification payloads into complete `Navigati
 import Foundation
 import SwiftNavigation
 
-struct AppURLResolver: URLDeeplinkResolving {
+struct AppURLResolver: URLDeepLinkResolving {
     func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute> {
         if url.host == "settings" {
             return NavigationState(stack: [.profile, .settings])
@@ -29,13 +29,13 @@ struct AppURLResolver: URLDeeplinkResolving {
 ## Apply URL State
 
 ```swift
-try coordinator.applyURLDeeplink(url, resolver: AppURLResolver())
+try coordinator.applyURLDeepLink(url, resolver: AppURLResolver())
 ```
 
 ## Notification Resolver
 
 ```swift
-struct AppNotificationResolver: NotificationDeeplinkResolving {
+struct AppNotificationResolver: NotificationDeepLinkResolving {
     func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<AppRoute, AppModalRoute> {
         let openTerms = (userInfo["openTerms"] as? Bool) == true
         return NavigationState(
@@ -49,7 +49,7 @@ struct AppNotificationResolver: NotificationDeeplinkResolving {
 ## Apply Notification State
 
 ```swift
-try coordinator.applyNotificationDeeplink(userInfo: payload, resolver: AppNotificationResolver())
+try coordinator.applyNotificationDeepLink(userInfo: payload, resolver: AppNotificationResolver())
 ```
 
 By returning full snapshots, resolvers can reconstruct deeply nested navigation hierarchies in a deterministic way.

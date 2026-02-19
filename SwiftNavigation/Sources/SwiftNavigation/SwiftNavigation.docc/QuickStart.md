@@ -47,7 +47,7 @@ struct AppRootView: View {
                     onOpenSignIn: { coordinator.present(.signIn, style: .sheet) }
                 )
             },
-            destination: { route in
+            stackDestination: { route in
                 switch route {
                 case .profile:
                     ProfileView()

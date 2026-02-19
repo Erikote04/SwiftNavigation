@@ -15,8 +15,8 @@ Avoid exposing all coordinator methods everywhere. Define feature-focused protoc
 Use ``CoordinatorScope`` to separate concerns:
 
 - `.application` for top-level app flow.
-- `.tab(String)` for tab-specific stacks.
-- `.feature(String)` for isolated feature modules.
+- `.tab(name:)` for tab-specific stacks.
+- `.feature(name:)` for isolated feature modules.
 
 ## Clean Child Coordinators Proactively
 

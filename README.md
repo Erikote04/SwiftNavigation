@@ -32,10 +32,10 @@ Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs
 
 ## Key Features
 
-- Type-safe root stack (`[Route]`) with `push`, `pop`, `popToRoot`, and `popToView`.
+- Type-safe root stack (`[Route]`) with `push`, `pop`, `popToRoot`, and `popToRoute`.
 - Recursive modal navigation (`sheet` + `fullScreenCover`) with internal stack state per modal.
 - Automatic state sync when users dismiss modals via native gestures.
-- Scoped coordinators (`application`, `feature`, `tab`) and child lifecycle cleanup.
+- Scoped coordinators (`application`, `feature(name:)`, `tab(name:)`) and child lifecycle cleanup.
 - Protocol-based routing contracts to decouple ViewModels from SwiftUI.
 - Swift Testing-friendly architecture for deterministic navigation tests.
 
@@ -111,7 +111,7 @@ struct AppRootView: View {
                     onOpenLogin: { coordinator.present(.login, style: .sheet) }
                 )
             },
-            destination: { route in
+            stackDestination: { route in
                 switch route {
                 case .home:
                     HomeView(onOpenDetail: {}, onOpenLogin: {})
@@ -187,7 +187,7 @@ coordinator.restore(from: restored)
 import Foundation
 import SwiftNavigation
 
-struct URLResolver: URLDeeplinkResolving {
+struct URLResolver: URLDeepLinkResolving {
     func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute> {
         if url.host == "settings" {
             return NavigationState(stack: [.home, .settings])
@@ -196,7 +196,7 @@ struct URLResolver: URLDeeplinkResolving {
     }
 }
 
-try coordinator.applyURLDeeplink(URL(string: "myapp://settings")!, resolver: URLResolver())
+try coordinator.applyURLDeepLink(URL(string: "myapp://settings")!, resolver: URLResolver())
 ```
 
 ## Testing
@@ -209,7 +209,7 @@ import Testing
 
 @Test @MainActor
 func pushAndPop() {
-    let coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .feature("test"))
+    let coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .feature(name: "test"))
 
     coordinator.push(.home)
     coordinator.push(.detail)
