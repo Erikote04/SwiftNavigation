@@ -1,6 +1,6 @@
 import Foundation
 
-/// Type-erased router adapter that forwards navigation calls to a coordinator.
+/// Router adapter that forwards navigation calls to a coordinator.
 @available(iOS 17, macOS 14, *)
 @MainActor
 public final class NavigationRouterProxy<StackRoute: NavigationRoute, ModalRoute: NavigationRoute>: NavigationRouting {
@@ -48,8 +48,18 @@ public final class NavigationRouterProxy<StackRoute: NavigationRoute, ModalRoute
     /// - Parameter predicate: Predicate used to find the destination route.
     /// - Returns: Top route after trimming, or `nil` if no route matched.
     @discardableResult
+    public func popToRoute(where predicate: (StackRoute) -> Bool) -> StackRoute? {
+        coordinator?.popToRoute(where: predicate)
+    }
+
+    /// Pops stack entries until the last route matching a predicate becomes top-most.
+    ///
+    /// - Parameter predicate: Predicate used to find the destination route.
+    /// - Returns: Top route after trimming, or `nil` if no route matched.
+    @available(*, deprecated, renamed: "popToRoute(where:)")
+    @discardableResult
     public func popToView(where predicate: (StackRoute) -> Bool) -> StackRoute? {
-        coordinator?.popToView(where: predicate)
+        popToRoute(where: predicate)
     }
 
     /// Presents a modal flow.

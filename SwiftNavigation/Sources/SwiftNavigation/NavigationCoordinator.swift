@@ -104,7 +104,7 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
     /// - Parameter predicate: Predicate used to find the destination route.
     /// - Returns: The top route after trimming, or `nil` when no match exists.
     @discardableResult
-    public func popToView(where predicate: (StackRoute) -> Bool) -> StackRoute? {
+    public func popToRoute(where predicate: (StackRoute) -> Bool) -> StackRoute? {
         guard let targetIndex = stack.lastIndex(where: predicate) else {
             return nil
         }
@@ -115,6 +115,16 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
         }
 
         return stack.last
+    }
+
+    /// Pops routes until the last route that matches a predicate becomes top-most.
+    ///
+    /// - Parameter predicate: Predicate used to find the destination route.
+    /// - Returns: The top route after trimming, or `nil` when no match exists.
+    @available(*, deprecated, renamed: "popToRoute(where:)")
+    @discardableResult
+    public func popToView(where predicate: (StackRoute) -> Bool) -> StackRoute? {
+        popToRoute(where: predicate)
     }
 
     /// Presents a new modal flow.
@@ -244,7 +254,7 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
     ///   - depth: Modal stack index to update.
     /// - Returns: Top modal route after trimming, or `nil` if no route matched.
     @discardableResult
-    public func popModalToView(where predicate: (ModalRoute) -> Bool, at depth: Int) -> ModalRoute? {
+    public func popModalToRoute(where predicate: (ModalRoute) -> Bool, at depth: Int) -> ModalRoute? {
         guard modalStack.indices.contains(depth) else {
             return nil
         }
@@ -259,6 +269,18 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
         }
 
         return modalStack[depth].path.last
+    }
+
+    /// Pops routes in a modal flow until the last matching route becomes top-most.
+    ///
+    /// - Parameters:
+    ///   - predicate: Predicate used to find the destination route.
+    ///   - depth: Modal stack index to update.
+    /// - Returns: Top modal route after trimming, or `nil` if no route matched.
+    @available(*, deprecated, renamed: "popModalToRoute(where:at:)")
+    @discardableResult
+    public func popModalToView(where predicate: (ModalRoute) -> Bool, at depth: Int) -> ModalRoute? {
+        popModalToRoute(where: predicate, at: depth)
     }
 
     /// Exports the complete navigation state.
@@ -290,11 +312,39 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
     ///   - url: Incoming deep-link URL.
     ///   - resolver: Resolver that maps the URL to a navigation state.
     /// - Throws: Errors propagated by the resolver.
-    public func applyURLDeeplink<Resolver: URLDeeplinkResolving>(
+    public func applyURLDeepLink<Resolver: URLDeepLinkResolving>(
         _ url: URL,
         resolver: Resolver
     ) throws where Resolver.StackRoute == StackRoute, Resolver.ModalRoute == ModalRoute {
         let state = try resolver.navigationState(for: url)
+        restore(from: state)
+    }
+
+    /// Applies a URL deep link by resolving it into a navigation snapshot.
+    ///
+    /// - Parameters:
+    ///   - url: Incoming deep-link URL.
+    ///   - resolver: Resolver that maps the URL to a navigation state.
+    /// - Throws: Errors propagated by the resolver.
+    @available(*, deprecated, renamed: "applyURLDeepLink(_:resolver:)")
+    public func applyURLDeeplink<Resolver: URLDeepLinkResolving>(
+        _ url: URL,
+        resolver: Resolver
+    ) throws where Resolver.StackRoute == StackRoute, Resolver.ModalRoute == ModalRoute {
+        try applyURLDeepLink(url, resolver: resolver)
+    }
+
+    /// Applies a notification deep link by resolving payload data into state.
+    ///
+    /// - Parameters:
+    ///   - userInfo: Notification payload dictionary.
+    ///   - resolver: Resolver that maps payload data to a navigation state.
+    /// - Throws: Errors propagated by the resolver.
+    public func applyNotificationDeepLink<Resolver: NotificationDeepLinkResolving>(
+        userInfo: [AnyHashable: Any],
+        resolver: Resolver
+    ) throws where Resolver.StackRoute == StackRoute, Resolver.ModalRoute == ModalRoute {
+        let state = try resolver.navigationState(for: userInfo)
         restore(from: state)
     }
 
@@ -304,12 +354,12 @@ public final class NavigationCoordinator<StackRoute: NavigationRoute, ModalRoute
     ///   - userInfo: Notification payload dictionary.
     ///   - resolver: Resolver that maps payload data to a navigation state.
     /// - Throws: Errors propagated by the resolver.
-    public func applyNotificationDeeplink<Resolver: NotificationDeeplinkResolving>(
+    @available(*, deprecated, renamed: "applyNotificationDeepLink(userInfo:resolver:)")
+    public func applyNotificationDeeplink<Resolver: NotificationDeepLinkResolving>(
         userInfo: [AnyHashable: Any],
         resolver: Resolver
     ) throws where Resolver.StackRoute == StackRoute, Resolver.ModalRoute == ModalRoute {
-        let state = try resolver.navigationState(for: userInfo)
-        restore(from: state)
+        try applyNotificationDeepLink(userInfo: userInfo, resolver: resolver)
     }
 }
 

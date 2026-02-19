@@ -21,18 +21,40 @@ public struct RoutingView<
     /// - Parameters:
     ///   - coordinator: Coordinator that owns stack and modal navigation state.
     ///   - root: Root content rendered as the base of the root `NavigationStack`.
+    ///   - stackDestination: Builder for root stack route destinations.
+    ///   - modalDestination: Builder for modal root and modal stack destinations.
+    public init(
+        coordinator: NavigationCoordinator<StackRoute, ModalRoute>,
+        @ViewBuilder root: @escaping () -> Root,
+        @ViewBuilder stackDestination: @escaping (StackRoute) -> StackDestination,
+        @ViewBuilder modalDestination: @escaping (ModalRoute) -> ModalDestination
+    ) {
+        _coordinator = Bindable(coordinator)
+        self.root = root
+        self.stackDestination = stackDestination
+        self.modalDestination = modalDestination
+    }
+
+    /// Creates a routing container that renders stack and modal destinations.
+    ///
+    /// - Parameters:
+    ///   - coordinator: Coordinator that owns stack and modal navigation state.
+    ///   - root: Root content rendered as the base of the root `NavigationStack`.
     ///   - destination: Builder for root stack route destinations.
     ///   - modalDestination: Builder for modal root and modal stack destinations.
+    @available(*, deprecated, renamed: "init(coordinator:root:stackDestination:modalDestination:)")
     public init(
         coordinator: NavigationCoordinator<StackRoute, ModalRoute>,
         @ViewBuilder root: @escaping () -> Root,
         @ViewBuilder destination: @escaping (StackRoute) -> StackDestination,
         @ViewBuilder modalDestination: @escaping (ModalRoute) -> ModalDestination
     ) {
-        _coordinator = Bindable(coordinator)
-        self.root = root
-        self.stackDestination = destination
-        self.modalDestination = modalDestination
+        self.init(
+            coordinator: coordinator,
+            root: root,
+            stackDestination: destination,
+            modalDestination: modalDestination
+        )
     }
 
     /// Renders the root stack and recursively attaches nested modal presenters.

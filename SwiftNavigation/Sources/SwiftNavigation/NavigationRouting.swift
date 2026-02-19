@@ -41,6 +41,13 @@ public protocol NavigationRouting: AnyObject {
     /// - Parameter predicate: Predicate used to find the target route.
     /// - Returns: The resulting top route after trimming, or `nil` if no route matched.
     @discardableResult
+    func popToRoute(where predicate: (StackRoute) -> Bool) -> StackRoute?
+
+    /// Pops stack entries until the last route matching a predicate becomes top-most.
+    ///
+    /// - Parameter predicate: Predicate used to find the target route.
+    /// - Returns: The resulting top route after trimming, or `nil` if no route matched.
+    @discardableResult
     func popToView(where predicate: (StackRoute) -> Bool) -> StackRoute?
 
     /// Presents a modal flow on top of the current UI stack.
@@ -72,8 +79,19 @@ public protocol NavigationRouting: AnyObject {
     func restore(from state: NavigationState<StackRoute, ModalRoute>)
 }
 
+public extension NavigationRouting {
+    /// Pops stack entries until the last route matching a predicate becomes top-most.
+    ///
+    /// - Parameter predicate: Predicate used to find the target route.
+    /// - Returns: The resulting top route after trimming, or `nil` if no route matched.
+    @discardableResult
+    func popToRoute(where predicate: (StackRoute) -> Bool) -> StackRoute? {
+        popToView(where: predicate)
+    }
+}
+
 /// URL-based deep-link reconstruction contract.
-public protocol URLDeeplinkResolving {
+public protocol URLDeepLinkResolving {
     /// Route type used by the root navigation stack.
     associatedtype StackRoute: NavigationRoute
     /// Route type used by modal flows.
@@ -88,7 +106,7 @@ public protocol URLDeeplinkResolving {
 }
 
 /// Notification payload-based deep-link reconstruction contract.
-public protocol NotificationDeeplinkResolving {
+public protocol NotificationDeepLinkResolving {
     /// Route type used by the root navigation stack.
     associatedtype StackRoute: NavigationRoute
     /// Route type used by modal flows.
@@ -101,3 +119,9 @@ public protocol NotificationDeeplinkResolving {
     /// - Throws: Resolver-specific decoding or validation errors.
     func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<StackRoute, ModalRoute>
 }
+
+@available(*, deprecated, renamed: "URLDeepLinkResolving")
+public typealias URLDeeplinkResolving = URLDeepLinkResolving
+
+@available(*, deprecated, renamed: "NotificationDeepLinkResolving")
+public typealias NotificationDeeplinkResolving = NotificationDeepLinkResolving

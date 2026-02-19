@@ -65,7 +65,89 @@ public enum CoordinatorScope: Codable, Hashable, Sendable {
     /// Scope for top-level app navigation flows.
     case application
     /// Scope for a feature-specific coordinator.
-    case feature(String)
+    case feature(name: String)
     /// Scope for a tab-specific coordinator.
-    case tab(String)
+    case tab(name: String)
+
+    @available(*, deprecated, renamed: "feature(name:)")
+    public static func feature(_ name: String) -> CoordinatorScope {
+        .feature(name: name)
+    }
+
+    @available(*, deprecated, renamed: "tab(name:)")
+    public static func tab(_ name: String) -> CoordinatorScope {
+        .tab(name: name)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case application
+        case feature
+        case tab
+    }
+
+    private enum AssociatedValueKeys: String, CodingKey {
+        case name
+        case _0
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        if container.contains(.application) {
+            self = .application
+            return
+        }
+
+        if container.contains(.feature) {
+            let nested = try container.nestedContainer(keyedBy: AssociatedValueKeys.self, forKey: .feature)
+            if let name = try nested.decodeIfPresent(String.self, forKey: .name)
+                ?? nested.decodeIfPresent(String.self, forKey: ._0) {
+                self = .feature(name: name)
+                return
+            }
+            throw DecodingError.dataCorruptedError(
+                forKey: .feature,
+                in: container,
+                debugDescription: "Missing associated value for feature scope."
+            )
+        }
+
+        if container.contains(.tab) {
+            let nested = try container.nestedContainer(keyedBy: AssociatedValueKeys.self, forKey: .tab)
+            if let name = try nested.decodeIfPresent(String.self, forKey: .name)
+                ?? nested.decodeIfPresent(String.self, forKey: ._0) {
+                self = .tab(name: name)
+                return
+            }
+            throw DecodingError.dataCorruptedError(
+                forKey: .tab,
+                in: container,
+                debugDescription: "Missing associated value for tab scope."
+            )
+        }
+
+        throw DecodingError.dataCorrupted(
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Invalid CoordinatorScope payload."
+            )
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        switch self {
+        case .application:
+            _ = container.nestedContainer(keyedBy: AssociatedValueKeys.self, forKey: .application)
+        case .feature(name: let name):
+            var nested = container.nestedContainer(keyedBy: AssociatedValueKeys.self, forKey: .feature)
+            try nested.encode(name, forKey: .name)
+            try nested.encode(name, forKey: ._0)
+        case .tab(name: let name):
+            var nested = container.nestedContainer(keyedBy: AssociatedValueKeys.self, forKey: .tab)
+            try nested.encode(name, forKey: .name)
+            try nested.encode(name, forKey: ._0)
+        }
+    }
 }
