@@ -32,7 +32,7 @@ struct AppRootView: View {
                     }
                 }
             },
-            destination: { route in
+            stackDestination: { route in
                 switch route {
                 case .characterDetail(let character):
                     CharacterDetailView(
