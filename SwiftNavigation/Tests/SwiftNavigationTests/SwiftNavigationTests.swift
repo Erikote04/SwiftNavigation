@@ -30,7 +30,7 @@ private final class ChildCoordinatorMock: CoordinatorLifecycle {
 }
 
 @available(iOS 17, macOS 14, *)
-private struct URLResolverMock: URLDeeplinkResolving {
+private struct URLResolverMock: URLDeepLinkResolving {
     func navigationState(for url: URL) throws -> NavigationState<TestStackRoute, TestModalRoute> {
         let isSettings = url.absoluteString.contains("settings")
         return NavigationState(
@@ -41,7 +41,7 @@ private struct URLResolverMock: URLDeeplinkResolving {
 }
 
 @available(iOS 17, macOS 14, *)
-private struct NotificationResolverMock: NotificationDeeplinkResolving {
+private struct NotificationResolverMock: NotificationDeepLinkResolving {
     func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<TestStackRoute, TestModalRoute> {
         let shouldOpenModal = (userInfo["showLogin"] as? Bool) == true
         return NavigationState(
@@ -53,7 +53,7 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
 
 @available(iOS 17, macOS 14, *)
 @Test @MainActor func stackOperations_areTypeSafeAndPredictable() {
-    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature("test"))
+    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature(name: "test"))
 
     coordinator.push(.dashboard)
     coordinator.push(.details)
@@ -65,7 +65,7 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
     #expect(popped == .settings)
     #expect(coordinator.stack == [.dashboard, .details])
 
-    let destination = coordinator.popToView { $0 == .dashboard }
+    let destination = coordinator.popToRoute { $0 == .dashboard }
     #expect(destination == .dashboard)
     #expect(coordinator.stack == [.dashboard])
 
@@ -75,7 +75,7 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
 
 @available(iOS 17, macOS 14, *)
 @Test @MainActor func modalStack_supportsNestedFlowsAndDismissFromDepth() {
-    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature("auth"))
+    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature(name: "auth"))
 
     coordinator.present(.login, style: .sheet)
     coordinator.pushModalRoute(.otp, at: 0)
@@ -94,7 +94,7 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
 
 @available(iOS 17, macOS 14, *)
 @Test @MainActor func stateRestoration_roundTripsThroughCodableSnapshot() throws {
-    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature("checkout"))
+    let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature(name: "checkout"))
     coordinator.push(.dashboard)
     coordinator.push(.summary)
     coordinator.present(.login, style: .sheet, path: [.otp])
@@ -103,7 +103,7 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
     let data = try JSONEncoder().encode(snapshot)
     let decoded = try JSONDecoder().decode(NavigationState<TestStackRoute, TestModalRoute>.self, from: data)
 
-    let restored = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature("checkout"))
+    let restored = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .feature(name: "checkout"))
     restored.restore(from: decoded)
 
     #expect(restored.stack == [.dashboard, .summary])
@@ -116,10 +116,10 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
 @Test @MainActor func deeplinkResolvers_canRebuildComplexState() throws {
     let coordinator = NavigationCoordinator<TestStackRoute, TestModalRoute>(scope: .application)
 
-    try coordinator.applyURLDeeplink(URL(string: "myapp://settings")!, resolver: URLResolverMock())
+    try coordinator.applyURLDeepLink(URL(string: "myapp://settings")!, resolver: URLResolverMock())
     #expect(coordinator.stack == [.dashboard, .settings])
 
-    try coordinator.applyNotificationDeeplink(userInfo: ["showLogin": true], resolver: NotificationResolverMock())
+    try coordinator.applyNotificationDeepLink(userInfo: ["showLogin": true], resolver: NotificationResolverMock())
     #expect(coordinator.stack == [.dashboard])
     #expect(coordinator.modalStack.count == 1)
     #expect(coordinator.modalStack[0].root == .login)
@@ -155,4 +155,25 @@ private struct NotificationResolverMock: NotificationDeeplinkResolving {
 
     #expect(snapshot.stack == [.dashboard])
     #expect(snapshot.modalStack.count == 1)
+}
+
+@Test func coordinatorScope_decodesLegacyAssociatedValueKeys() throws {
+    let legacyFeatureData = Data(#"{"feature":{"_0":"checkout"}}"#.utf8)
+    let legacyTabData = Data(#"{"tab":{"_0":"home"}}"#.utf8)
+
+    let featureScope = try JSONDecoder().decode(CoordinatorScope.self, from: legacyFeatureData)
+    let tabScope = try JSONDecoder().decode(CoordinatorScope.self, from: legacyTabData)
+
+    #expect(featureScope == .feature(name: "checkout"))
+    #expect(tabScope == .tab(name: "home"))
+}
+
+@Test func coordinatorScope_encodesBothLegacyAndNamedKeys() throws {
+    let scope = CoordinatorScope.feature(name: "checkout")
+    let data = try JSONEncoder().encode(scope)
+    let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+    let featurePayload = payload?["feature"] as? [String: String]
+
+    #expect(featurePayload?["name"] == "checkout")
+    #expect(featurePayload?["_0"] == "checkout")
 }
