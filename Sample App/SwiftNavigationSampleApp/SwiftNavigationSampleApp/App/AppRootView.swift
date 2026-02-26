@@ -4,19 +4,35 @@ import SwiftNavigation
 private enum RootTab: Hashable {
     case characters
     case explore
+    
+    init?(storageValue: String) {
+        switch storageValue {
+        case "characters": self = .characters
+        case "explore": self = .explore
+        default: return nil
+        }
+    }
+
+    var storageValue: String {
+        switch self {
+        case .characters: "characters"
+        case .explore: "explore"
+        }
+    }
 }
 
 @MainActor
 struct AppRootView: View {
     let appCoordinator: AppCoordinator
 
-    @State private var selectedTab: RootTab = .characters
+    @AppStorage("swiftNavigationSample.selectedRootTab")
+    private var selectedTabStorage: String = "characters"
 
     var body: some View {
         RoutingView(
             coordinator: appCoordinator.navigationCoordinator,
             root: {
-                TabView(selection: $selectedTab) {
+                TabView(selection: selectedTabBinding) {
                     Tab("Characters", systemImage: "person.3.fill", value: .characters) {
                         CharactersListView(viewModel: appCoordinator.charactersViewModel)
                     }
@@ -108,5 +124,16 @@ struct AppRootView: View {
         case .explore:
             "Locations"
         }
+    }
+
+    private var selectedTabBinding: Binding<RootTab> {
+        Binding(
+            get: { selectedTab },
+            set: { selectedTabStorage = $0.storageValue }
+        )
+    }
+
+    private var selectedTab: RootTab {
+        RootTab(storageValue: selectedTabStorage) ?? .characters
     }
 }
