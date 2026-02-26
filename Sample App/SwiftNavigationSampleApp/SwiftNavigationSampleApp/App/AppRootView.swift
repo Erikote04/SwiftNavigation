@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 import SwiftNavigation
 
@@ -94,6 +95,31 @@ struct AppRootView: View {
             }
         )
         .navigationCoordinator(appCoordinator.navigationCoordinator)
+        .onOpenURL { url in
+            appCoordinator.handleDeepLinkURL(url)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .sampleAppNotificationDeepLinkReceived)) { notification in
+            guard let userInfo = notification.userInfo else {
+                return
+            }
+
+            appCoordinator.handleNotificationDeepLink(userInfo: userInfo)
+        }
+        .alert(
+            "Deep Link Error",
+            isPresented: Binding(
+                get: { appCoordinator.deepLinkErrorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        appCoordinator.deepLinkErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("Dismiss", role: .cancel) {}
+        } message: {
+            Text(appCoordinator.deepLinkErrorMessage ?? "Unknown deeplink error")
+        }
     }
 
     @ToolbarContentBuilder

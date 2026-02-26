@@ -7,6 +7,7 @@ import SwiftNavigation
 @Observable
 final class AppCoordinator {
     private static let navigationStateStorageKey = "swiftNavigationSample.navigationState.v1"
+    private static let selectedRootTabStorageKey = "swiftNavigationSample.selectedRootTab"
 
     let navigationCoordinator: NavigationCoordinator<AppRoute, AppModalRoute>
     let service: RickMortyService
@@ -16,6 +17,7 @@ final class AppCoordinator {
 
     let charactersViewModel: CharactersListViewModel
     let locationsViewModel: LocationsListViewModel
+    var deepLinkErrorMessage: String?
 
     init() {
         let navigationCoordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .application)
@@ -48,6 +50,43 @@ final class AppCoordinator {
         } catch {
             assertionFailure("Failed to encode navigation state: \(error)")
         }
+    }
+
+    func handleDeepLinkURL(_ url: URL) {
+        let resolver = AppURLDeepLinkResolver()
+
+        do {
+            let preferredRootTab = try AppURLDeepLinkResolver.preferredRootTab(for: url)
+            try navigationCoordinator.applyURLDeepLink(url, resolver: resolver)
+            applyPreferredRootTab(preferredRootTab)
+            deepLinkErrorMessage = nil
+        } catch {
+            deepLinkErrorMessage = error.localizedDescription
+        }
+    }
+
+    func handleNotificationDeepLink(userInfo: [AnyHashable: Any]) {
+        let resolver = AppNotificationDeepLinkResolver()
+
+        do {
+            let preferredRootTab = try AppNotificationDeepLinkResolver.preferredRootTab(for: userInfo)
+            try navigationCoordinator.applyNotificationDeepLink(userInfo: userInfo, resolver: resolver)
+            applyPreferredRootTab(preferredRootTab)
+            deepLinkErrorMessage = nil
+        } catch {
+            deepLinkErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func applyPreferredRootTab(_ preferredRootTab: AppDeepLinkPreferredRootTab?) {
+        guard let preferredRootTab else {
+            return
+        }
+
+        UserDefaults.standard.set(
+            preferredRootTab.rawValue,
+            forKey: Self.selectedRootTabStorageKey
+        )
     }
 
     private func restorePersistedNavigationStateIfAvailable() {

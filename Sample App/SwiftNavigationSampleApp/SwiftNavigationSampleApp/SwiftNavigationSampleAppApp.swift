@@ -4,6 +4,8 @@ import SwiftUI
 @MainActor
 struct SwiftNavigationSampleAppApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @UIApplicationDelegateAdaptor(SampleAppNotificationDelegate.self)
+    private var notificationDelegate
     @State private var appCoordinator = AppCoordinator()
 
     var body: some Scene {
