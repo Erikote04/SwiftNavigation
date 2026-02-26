@@ -1,6 +1,10 @@
 import Foundation
 import SwiftNavigation
 
+// MARK: - 1. Definir contratos de navegación compartidos (tipos que viajarán por SwiftNavigation)
+
+// MARK: - 1.1 Payloads de ruta: datos mínimos que la navegación necesita para abrir pantallas
+
 struct CharacterRouteData: NavigationRoute, Identifiable {
     let id: Int
     let name: String
@@ -24,11 +28,15 @@ struct LocationRouteData: NavigationRoute, Identifiable {
     let dimension: String
 }
 
+// MARK: - 1.2 Rutas de stack (push) de toda la app
+
 enum AppRoute: NavigationRoute {
     case characterDetail(CharacterRouteData)
     case episodeDetail(EpisodeRouteData)
     case locationDetail(LocationRouteData)
 }
+
+// MARK: - 1.3 Rutas modales (sheet/fullScreen) de toda la app
 
 enum AppModalRoute: NavigationRoute {
     case characterActions(CharacterRouteData)

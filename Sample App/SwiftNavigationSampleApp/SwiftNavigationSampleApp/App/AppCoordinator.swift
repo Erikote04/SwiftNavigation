@@ -2,6 +2,8 @@ import Foundation
 import Observation
 import SwiftNavigation
 
+// MARK: - 3. Composición de la app: integrar SwiftNavigation a nivel raíz
+
 @available(iOS 17, *)
 @MainActor
 @Observable
@@ -19,9 +21,13 @@ final class AppCoordinator {
     let locationsViewModel: LocationsListViewModel
     var deepLinkErrorMessage: String?
 
+    // MARK: - 3.1 Crear el `NavigationCoordinator` global y un `NavigationRouterProxy` compartido
+
     init() {
         let navigationCoordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .application)
         let sharedRouter = NavigationRouterProxy(coordinator: navigationCoordinator)
+
+        // MARK: - 3.2 Crear coordinadores de feature reutilizando el mismo router
 
         let charactersCoordinator = CharactersCoordinator(router: sharedRouter)
         let exploreCoordinator = LocationsCoordinator(router: sharedRouter)
@@ -33,14 +39,22 @@ final class AppCoordinator {
         self.exploreCoordinator = exploreCoordinator
         self.service = service
 
+        // MARK: - 3.3 Inyectar coordinadores en ViewModels (la UI navega vía protocolos)
+
         self.charactersViewModel = CharactersListViewModel(service: service, router: charactersCoordinator)
         self.locationsViewModel = LocationsListViewModel(service: service, router: exploreCoordinator)
+
+        // MARK: - 3.4 Registrar child coordinators para ciclo de vida/arquitectura de SwiftNavigation
 
         navigationCoordinator.attachChild(charactersCoordinator)
         navigationCoordinator.attachChild(exploreCoordinator)
 
+        // MARK: - 3.5 Restaurar estado de navegación persistido (stack + modales)
+
         restorePersistedNavigationStateIfAvailable()
     }
+
+    // MARK: - 3.6 Persistencia de navegación: exportar `NavigationState` antes de salir
 
     func persistNavigationState() {
         do {
@@ -51,6 +65,8 @@ final class AppCoordinator {
             assertionFailure("Failed to encode navigation state: \(error)")
         }
     }
+
+    // MARK: - 3.7 Deep links URL: resolver y aplicar estado a `NavigationCoordinator`
 
     func handleDeepLinkURL(_ url: URL) {
         let resolver = AppURLDeepLinkResolver()
@@ -65,6 +81,8 @@ final class AppCoordinator {
         }
     }
 
+    // MARK: - 3.8 Deep links de notificación: mismo flujo usando resolver de payloads
+
     func handleNotificationDeepLink(userInfo: [AnyHashable: Any]) {
         let resolver = AppNotificationDeepLinkResolver()
 
@@ -77,6 +95,8 @@ final class AppCoordinator {
             deepLinkErrorMessage = error.localizedDescription
         }
     }
+
+    // MARK: - 3.9 Helpers privados (tab preferida + restore del estado)
 
     private func applyPreferredRootTab(_ preferredRootTab: AppDeepLinkPreferredRootTab?) {
         guard let preferredRootTab else {

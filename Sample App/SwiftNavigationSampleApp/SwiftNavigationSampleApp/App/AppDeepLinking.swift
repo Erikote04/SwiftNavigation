@@ -1,10 +1,14 @@
 import Foundation
 import SwiftNavigation
 
+// MARK: - 6. Deep Linking con SwiftNavigation: construir `NavigationState` desde URL/payloads
+
 enum AppDeepLinkPreferredRootTab: String {
     case characters
     case explore
 }
+
+// MARK: - 6.1 Tipos de soporte: errores de parsing para feedback en la UI
 
 enum AppDeepLinkError: LocalizedError {
     case unsupportedURLScheme(String?)
@@ -39,6 +43,7 @@ enum AppDeepLinkError: LocalizedError {
 /// - `swiftnavsample://characters/1?actions=1`
 /// - `swiftnavsample://locations/3?about=1`
 /// - `swiftnavsample://settings`
+// MARK: - 6.2 Resolver de URL: adapta el parser al protocolo `URLDeepLinkResolving`
 struct AppURLDeepLinkResolver: URLDeepLinkResolving {
     func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute> {
         try AppDeepLinkParser.parseURL(url).navigationState
@@ -55,6 +60,7 @@ struct AppURLDeepLinkResolver: URLDeepLinkResolving {
 /// - `["target": "location", "id": 3, "showAbout": true]`
 /// - `["target": "settings"]`
 /// - `["deeplink_url": "swiftnavsample://characters/1?episode=28"]`
+// MARK: - 6.3 Resolver de notificaciones: adapta payloads al protocolo `NotificationDeepLinkResolving`
 struct AppNotificationDeepLinkResolver: NotificationDeepLinkResolving {
     func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<AppRoute, AppModalRoute> {
         try AppDeepLinkParser.parseNotification(userInfo).navigationState
@@ -66,6 +72,7 @@ struct AppNotificationDeepLinkResolver: NotificationDeepLinkResolving {
 }
 
 extension Notification.Name {
+    // MARK: - 6.4 Evento interno para conectar UNUserNotificationCenter con SwiftUI/AppCoordinator
     /// Internal bridge notification posted by the sample `UNUserNotificationCenterDelegate`.
     static let sampleAppNotificationDeepLinkReceived =
         Notification.Name("SwiftNavigationSampleApp.notificationDeepLinkReceived")
@@ -75,6 +82,8 @@ private struct ParsedAppDeepLink {
     let preferredRootTab: AppDeepLinkPreferredRootTab?
     let navigationState: NavigationState<AppRoute, AppModalRoute>
 }
+
+// MARK: - 6.5 Parser central: traduce URLs/payloads a `NavigationState<AppRoute, AppModalRoute>`
 
 private enum AppDeepLinkParser {
     static func parseURL(_ url: URL) throws -> ParsedAppDeepLink {
@@ -218,6 +227,8 @@ private enum AppDeepLinkParser {
         }
     }
 
+    // MARK: - 6.5.1 Builders por target (character/location) para stack + modal stack
+
     private static func characterDeepLink(
         idSegment: String?,
         queryItems: [URLQueryItem]
@@ -277,6 +288,8 @@ private enum AppDeepLinkParser {
             )
         )
     }
+
+    // MARK: - 6.5.2 Helpers de parsing y factories de `RouteData`
 
     private static func normalizedSegments(from url: URL) -> [String] {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
