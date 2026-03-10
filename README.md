@@ -53,14 +53,14 @@ In Xcode:
 
 1. `File` -> `Add Packages...`
 2. Enter: `https://github.com/Erikote04/SwiftNavigation`
-3. Select `Up to Next Major Version` and set it to `1.0.0`
+3. Select `Up to Next Major Version` and set it to `1.0.2`
 4. Add the `SwiftNavigation` product to your target
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Erikote04/SwiftNavigation", from: "1.0.0")
+    .package(url: "https://github.com/Erikote04/SwiftNavigation", from: "1.0.2")
 ]
 ```
 

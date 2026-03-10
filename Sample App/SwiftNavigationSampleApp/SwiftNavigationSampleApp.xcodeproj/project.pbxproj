@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB55382E2F4366F300E58BC2 /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = BB55382D2F4366F300E58BC2 /* SwiftNavigation */; };
-		BB5538312F43671900E58BC2 /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BB5538302F43671900E58BC2 /* SwiftNetwork */; };
+		BB57D4CD2F60AA61009BCE03 /* SwiftNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = BB57D4CC2F60AA61009BCE03 /* SwiftNavigation */; };
+		BB57D4D02F60AA8E009BCE03 /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BB57D4CF2F60AA8E009BCE03 /* SwiftNetwork */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB55382E2F4366F300E58BC2 /* SwiftNavigation in Frameworks */,
-				BB5538312F43671900E58BC2 /* SwiftNetwork in Frameworks */,
+				BB57D4CD2F60AA61009BCE03 /* SwiftNavigation in Frameworks */,
+				BB57D4D02F60AA8E009BCE03 /* SwiftNetwork in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,8 +72,8 @@
 			);
 			name = SwiftNavigationSampleApp;
 			packageProductDependencies = (
-				BB55382D2F4366F300E58BC2 /* SwiftNavigation */,
-				BB5538302F43671900E58BC2 /* SwiftNetwork */,
+				BB57D4CC2F60AA61009BCE03 /* SwiftNavigation */,
+				BB57D4CF2F60AA8E009BCE03 /* SwiftNetwork */,
 			);
 			productName = SwiftNavigationSampleApp;
 			productReference = BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */;
@@ -104,8 +104,8 @@
 			mainGroup = BB5538152F4366B100E58BC2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BB55382C2F4366F300E58BC2 /* XCLocalSwiftPackageReference "../.." */,
-				BB55382F2F43671900E58BC2 /* XCLocalSwiftPackageReference "../../../Swift-Network-Layer/SwiftNetwork" */,
+				BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */,
+				BB57D4CE2F60AA8E009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB55381F2F4366B100E58BC2 /* Products */;
@@ -346,24 +346,34 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		BB55382C2F4366F300E58BC2 /* XCLocalSwiftPackageReference "../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../..;
+/* Begin XCRemoteSwiftPackageReference section */
+		BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Erikote04/SwiftNavigation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
 		};
-		BB55382F2F43671900E58BC2 /* XCLocalSwiftPackageReference "../../../Swift-Network-Layer/SwiftNetwork" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../Swift-Network-Layer/SwiftNetwork";
+		BB57D4CE2F60AA8E009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Erikote04/SwiftNetwork";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.2;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BB55382D2F4366F300E58BC2 /* SwiftNavigation */ = {
+		BB57D4CC2F60AA61009BCE03 /* SwiftNavigation */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */;
 			productName = SwiftNavigation;
 		};
-		BB5538302F43671900E58BC2 /* SwiftNetwork */ = {
+		BB57D4CF2F60AA8E009BCE03 /* SwiftNetwork */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = BB57D4CE2F60AA8E009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */;
 			productName = SwiftNetwork;
 		};
 /* End XCSwiftPackageProductDependency section */
