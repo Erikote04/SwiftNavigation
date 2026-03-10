@@ -18,11 +18,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SwiftNavigation"
+            name: "SwiftNavigation",
+            path: "SwiftNavigation/Sources/SwiftNavigation"
         ),
         .testTarget(
             name: "SwiftNavigationTests",
-            dependencies: ["SwiftNavigation"]
+            dependencies: ["SwiftNavigation"],
+            path: "SwiftNavigation/Tests/SwiftNavigationTests"
         )
     ]
 )
