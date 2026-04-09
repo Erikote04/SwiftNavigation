@@ -1,11 +1,14 @@
 # SwiftNavigation
 
-Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs (`NavigationStack`, `.sheet`, `.fullScreenCover`, and `.alert`).
-
 [![Swift](https://img.shields.io/badge/Swift-6-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-blue.svg)](https://developer.apple.com/ios/)
 [![DocC Deploy](https://github.com/Erikote04/SwiftNavigation/actions/workflows/publish-docc.yml/badge.svg)](https://github.com/Erikote04/SwiftNavigation/actions/workflows/publish-docc.yml)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-2ea44f)](https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/)
+
+Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs (`NavigationStack`, `.sheet`, `.fullScreenCover`, and `.alert`).
+
+> [!NOTE]  
+> I recommend you to explore the sample app, read the [docs](https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/), understand the implementations for the different features and then try to do it yourself in your project, but if you want to skip that whole process and get started as soon as possible, you can install the specific [skill](./swift-navigation-skill/README.md) for this library.
 
 ## Overview
 
