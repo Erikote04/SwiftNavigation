@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/marketplace/marketplace.schema.json",
+  "name": "swift-navigation-skill",
+  "version": "1.0.0",
+  "owner": {
+    "name": "Erik Sebastian de Erice Jerez",
+    "email": "erikote2004@icloud.com"
+  },
+  "metadata": {
+    "description": "SwiftNavigation integration guidance for routes, coordinators, presentation, deep links, universal links, and state restoration."
+  },
+  "plugins": [
+    {
+      "name": "swift-navigation-skill",
+      "description": "Implement SwiftNavigation the right way in SwiftUI apps.",
+      "repository": "https://github.com/Erikote04/SwiftNavigation",
+      "version": "1.0.0",
+      "author": {
+        "name": "Erik Sebastian de Erice Jerez",
+        "email": "erikote2004@icloud.com"
+      },
+      "license": "MIT",
+      "category": "development",
+      "keywords": [
+        "swift",
+        "swiftui",
+        "navigation",
+        "coordinator",
+        "mvvm-c",
+        "deeplink",
+        "universal-links",
+        "alerts",
+        "sheets",
+        "ios"
+      ],
+      "tags": [
+        "swift",
+        "swiftui",
+        "navigation",
+        "coordinator",
+        "mvvm-c",
+        "deeplink",
+        "universal-links",
+        "alerts",
+        "sheets",
+        "ios"
+      ],
+      "source": "./"
+    }
+  ]
+}

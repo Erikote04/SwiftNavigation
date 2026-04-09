@@ -1,0 +1,4 @@
+interface:
+  display_name: "SwiftNavigation Skill"
+  short_description: "Implement SwiftNavigation the right way"
+  default_prompt: "Use $swift-navigation-skill to integrate SwiftNavigation into this SwiftUI app with coordinators, routes, deep links, sheets, alerts, and state restoration."
