@@ -8,9 +8,10 @@ Use protocol-based routing contracts to keep ViewModels independent from SwiftUI
 import SwiftNavigation
 
 @MainActor
-protocol LoginRouting: AnyObject {
+protocol PaymentRouting: AnyObject {
     func showTerms()
-    func finishLogin()
+    func showReview() -> NavigationEntryID
+    func showError(_ message: String)
 }
 ```
 
@@ -20,10 +21,10 @@ protocol LoginRouting: AnyObject {
 import SwiftNavigation
 
 @MainActor
-final class LoginRouter: LoginRouting {
-    private let routing: NavigationRouterProxy<AppRoute, AppModalRoute>
+final class PaymentRouter: PaymentRouting {
+    private let routing: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>
 
-    init(coordinator: NavigationCoordinator<AppRoute, AppModalRoute>) {
+    init(coordinator: NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>) {
         self.routing = NavigationRouterProxy(coordinator: coordinator)
     }
 
@@ -31,9 +32,12 @@ final class LoginRouter: LoginRouting {
         routing.present(.terms, style: .fullScreen)
     }
 
-    func finishLogin() {
-        routing.dismissTopModal()
+    func showReview() -> NavigationEntryID {
         routing.push(.profile)
+    }
+
+    func showError(_ message: String) {
+        routing.presentAlert(.sessionExpired)
     }
 }
 ```
@@ -43,10 +47,11 @@ final class LoginRouter: LoginRouting {
 ```swift
 @Observable
 @MainActor
-final class LoginViewModel {
-    private let router: LoginRouting
+final class PaymentViewModel {
+    private let router: PaymentRouting
+    private var reviewEntryID: NavigationEntryID?
 
-    init(router: LoginRouting) {
+    init(router: PaymentRouting) {
         self.router = router
     }
 
@@ -54,10 +59,16 @@ final class LoginViewModel {
         router.showTerms()
     }
 
-    func didFinishLogin() {
-        router.finishLogin()
+    func didTapContinue() {
+        reviewEntryID = router.showReview()
+    }
+
+    func didFailPayment() {
+        router.showError("The bank declined the payment.")
     }
 }
 ```
 
 This pattern keeps ViewModels free of direct references to SwiftUI navigation APIs and preserves strict MVVM-C boundaries.
+
+When a feature needs exact back navigation, store the returned `NavigationEntryID` inside the ViewModel or feature coordinator and call `popToEntry(_:)` later through your routing abstraction.

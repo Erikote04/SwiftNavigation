@@ -1,222 +1,119 @@
 # SwiftNavigation Sample App
 
-A demo iOS app that showcases **MVVM-C navigation** using `SwiftNavigation` and async data fetching with `SwiftNetwork`, backed by the **Rick and Morty API**.
+The sample app now showcases both the original Rick and Morty flows and the new SwiftNavigation v2 feature set.
 
-The sample intentionally demonstrates real navigation use cases:
+## What To Explore
 
-- `TabView` root navigation
-- push and pop flows
-- `popToRoot`
-- sheets and full-screen covers
-- navigation inside modals
-- nested modal presentations (modal over modal)
+- `Characters` tab: classic push, sheet, full-screen, and nested-modal MVVM-C flows.
+- `Explore` tab: location routes plus legacy-style modal navigation.
+- `Showcase` tab: the new v2 demos.
 
----
+The `Showcase` area is where the new library behavior is exercised:
 
-## What This App Demonstrates
+- send-money flow with exact back navigation via `NavigationEntryID`
+- repeated amount editors to prove duplicate routes remain uniquely addressable
+- coordinator-driven alerts from both root content and a modal
+- configurable sheets with detents, background material, background interaction, and non-dismissible login
+- deep-link interception that redirects expired sessions to login and resumes the pending destination after sign-in
+- shared parsing for custom schemes and `https` universal-link style URLs
 
-- How to compose an app-level coordinator with feature-level coordinators.
-- How ViewModels stay decoupled from SwiftUI navigation APIs through routing protocols.
-- How `RoutingView` from `SwiftNavigation` drives root stack + recursive modal stack from coordinator state.
-- How to integrate an actor-based service layer using `SwiftNetwork`.
+## Architecture Snapshot
 
----
+- `AppCoordinator` owns a single `NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>`.
+- Feature-level coordinators (`CharactersCoordinator`, `LocationsCoordinator`, `ShowcaseCoordinator`) translate intent into navigation actions.
+- ViewModels stay SwiftUI-agnostic by depending on routing protocols instead of `NavigationCoordinator` directly.
+- `RoutingView` in `AppRootView` declares the entire route graph in one place, including `alertDestination`.
+- `SessionStore` models authentication state for login interception and protected destinations.
 
-## High-Level Architecture
-
-### Layers
-
-1. **UI (SwiftUI Views)**
-- Renders tabs, lists, detail screens, and modal content.
-
-2. **ViewModels (`@Observable`, `@MainActor`)**
-- Own view state, load API data, and trigger navigation through protocols.
-
-3. **Coordinators (MVVM-C)**
-- Translate intent into navigation actions (`push`, `present`, `pop`, `popToRoot`, etc.).
-
-4. **Network Service (`actor`)**
-- Fetches and decodes Rick and Morty API data via `SwiftNetwork`.
-
----
-
-## Folder Map
+## Showcase Folder Map
 
 - `SwiftNavigationSampleApp/App`
-  - `AppRoutes.swift`: typed route definitions
-  - `AppCoordinator.swift`: app + feature coordinators
-  - `AppRootView.swift`: root container with `RoutingView`
-- `SwiftNavigationSampleApp/Networking`
-  - `RickMortyService.swift`: actor-based service API
-  - `RickMortyModels.swift`: API DTOs and route mapping
-- `SwiftNavigationSampleApp/Features`
-  - `Characters`: list/detail/episode flows
-  - `Explore`: locations/settings/about flows
-  - `Modals`: modal view models and nested modal views
+  - `AppRoutes.swift`: stack, modal, and alert route contracts
+  - `AppCoordinator.swift`: root composition, persistence, deep-link interception
+  - `AppDeepLinking.swift`: URL and notification resolvers for both custom schemes and `https`
+  - `AppRootView.swift`: root `RoutingView`, tabs, modal routing, and alerts
+- `SwiftNavigationSampleApp/Features/Showcase`
+  - `SendMoney/*`: entry-bookmark flow and exact back navigation demo
+  - `Modal/*`: login, sheets, and modal alert demos
+  - `Protected/*`: login-gated profile and receipt destinations
+  - `SessionStore.swift`: lightweight auth state
+  - `ShowcaseCoordinator.swift`: showcase-specific routing adapter
+- `SwiftNavigationSampleAppTests`
+  - `ShowcaseSampleAppTests.swift`: Swift Testing coverage for routing, interception, and deep-link parsing
 
----
+## Deep Link Examples
 
-## Coordinators, Step by Step
+### Custom scheme
 
-### 1) Route Contracts (`AppRoutes.swift`)
+- `swiftnavsample://characters/1?episode=28`
+- `swiftnavsample://locations/3?about=1`
+- `swiftnavsample://showcase/send-money?recipient=Sonia`
+- `swiftnavsample://showcase/profile?displayName=Sonia`
 
-The app uses two typed route spaces:
+### HTTPS / universal-link style URLs
 
-- `AppRoute`: root `NavigationStack` routes (push-based).
-- `AppModalRoute`: modal routes (`sheet` / `fullScreenCover`) including modal-internal navigation.
+- `https://demo.swiftnavigation.app/showcase/send-money?recipient=Sonia`
+- `https://demo.swiftnavigation.app/showcase/profile?displayName=Sonia`
+- `https://demo.swiftnavigation.app/showcase/receipt?recipient=Sonia&amount=35`
 
-Both are `NavigationRoute` (`Codable + Hashable + Sendable`) so they are testable and serializable.
+### Notification payloads
 
-Route payloads (`CharacterRouteData`, `EpisodeRouteData`, `LocationRouteData`) carry lightweight data needed to bootstrap destination screens.
+- `["target": "send-money", "recipient": "Sonia"]`
+- `["target": "profile", "displayName": "Sonia"]`
+- `["target": "receipt", "recipient": "Sonia", "amount": 35]`
+- `["deeplink_url": "https://demo.swiftnavigation.app/showcase/profile"]`
 
-### 2) App-Level Composition (`AppCoordinator.swift`)
+## Simulator Walkthrough
 
-`AppCoordinator` owns and wires everything:
+1. Open `Sample App/SwiftNavigationSampleApp/SwiftNavigationSampleApp.xcodeproj`.
+2. Select the `SwiftNavigationSampleApp` scheme.
+3. Run on an iOS 26 simulator.
+4. Open the `Showcase` tab.
+5. Tap the session toolbar action to expire the current session.
+6. Trigger a protected deep link and verify the login sheet appears first.
+7. Complete login and verify `resumePendingNavigation()` takes you to the original destination.
 
-- `NavigationCoordinator<AppRoute, AppModalRoute>` as the single navigation state engine.
-- `NavigationRouterProxy` as protocol-friendly routing adapter.
-- Feature coordinators:
-  - `CharactersCoordinator`
-  - `ExploreCoordinator`
-- Shared service:
-  - `RickMortyService`
-- Root ViewModels:
-  - `CharactersListViewModel`
-  - `LocationsListViewModel`
+If you want to drive URLs from the simulator:
 
-This makes feature wiring explicit and centralized.
-
-### 3) Feature Coordinator Responsibilities
-
-### `CharactersCoordinator`
-
-Implements `CharactersRouting`:
-
-- `showCharacterDetail` -> `push(.characterDetail(...))`
-- `showEpisodeDetail` -> `push(.episodeDetail(...))`
-- `showCharacterActions` -> `present(.characterActions(...), style: .sheet)`
-- `popCurrent` -> `pop()`
-- `popToRoot` -> `popToRoot()`
-
-### `ExploreCoordinator`
-
-Implements `ExploreRouting`:
-
-- `showLocationDetail` -> push location detail
-- `showSettings` -> present full-screen settings
-- `showAbout` -> present about sheet
-
-Feature ViewModels only know these protocol methods, not `SwiftUI` nor `NavigationCoordinator` internals.
-
-### 4) Root Navigation Host (`AppRootView.swift`)
-
-`AppRootView` uses:
-
-- `RoutingView(coordinator: appCoordinator.navigationCoordinator, ...)`
-- Root content = `TabView` with `Characters` and `Explore` tabs.
-- `destination` maps `AppRoute` values to pushed screens.
-- `modalDestination` maps `AppModalRoute` values to modal screens.
-
-This is where the whole route graph is declared in one place.
-
-### 5) End-to-End Navigation Walkthrough
-
-### A) Push flow
-
-1. User taps a character in `CharactersTabView`.
-2. `CharactersListViewModel.didTapCharacter` calls `CharactersRouting.showCharacterDetail`.
-3. `CharactersCoordinator` pushes `.characterDetail`.
-4. `RoutingView` resolves route and shows `CharacterDetailView`.
-
-### B) Pop / PopToRoot flow
-
-- In `CharacterDetailView`, action buttons call ViewModel methods.
-- ViewModel delegates to `CharactersCoordinator`.
-- Coordinator calls `pop()` or `popToRoot()`.
-
-### C) Modal + navigation inside modal
-
-1. Character detail opens `characterActions` (sheet).
-2. Inside `CharacterActionsModalView`, `NavigationLink(value: .characterEpisodes(...))` pushes **inside the modal stack**.
-3. Episodes list can push modal episode detail (`.characterEpisodeDetail(...)`).
-
-### D) Nested modal over modal
-
-1. In character actions sheet, user opens `favoritesPlanner` as full-screen modal.
-2. From planner, user opens `plannerConfirmation` as sheet.
-3. This demonstrates recursive modal stacking managed by `SwiftNavigation`.
-
----
-
-## Networking and ViewModels
-
-`RickMortyService` is an `actor`, so all network access is serialized and concurrency-safe.
-
-- Uses `NetworkClient` from `SwiftNetwork`.
-- Provides async APIs for:
-  - character list/detail
-  - episode detail and batch episode fetch
-  - location list/detail
-- ViewModels call service methods with `await`, then update UI state on `@MainActor`.
-
----
-
-## Why `nonisolated` on API Models
-
-This sample target is configured with:
-
-- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-
-That means declarations are MainActor-isolated by default. Without adjustments, DTO conformances such as `Decodable` can become main-actor-isolated, which conflicts when decoding in non-main actor contexts (for example in the `RickMortyService` actor and generic `Sendable` constraints).
-
-So in `RickMortyModels.swift`, DTOs are declared with `nonisolated`:
-
-- `APIPageInfo`
-- `APIListResponse`
-- `APINamedResource`
-- `APICharacter`
-- `APIEpisode`
-- `APILocation`
-- helper `extractID(...)`
-
-This opts those data types out of implicit MainActor isolation and keeps decoding/sendability valid in concurrent contexts.
-
-### If the target did **not** use `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`
-
-You typically would **not need** these `nonisolated` annotations.
-
-In that setup, plain DTOs like this are enough:
-
-```swift
-struct APICharacter: Decodable, Sendable { ... }
+```bash
+xcrun simctl openurl booted 'swiftnavsample://showcase/send-money?recipient=Sonia'
+xcrun simctl openurl booted 'https://demo.swiftnavigation.app/showcase/receipt?recipient=Sonia&amount=35'
 ```
 
-So:
+## Universal Link Note
 
-- With MainActor default isolation: use `nonisolated` for pure data DTOs used off-main actor.
-- Without MainActor default isolation: regular structs are usually correct.
+The sample app already parses `https` URLs through the same resolver pipeline and wires both `.onOpenURL` and `NSUserActivityTypeBrowsingWeb` into the coordinator.
 
----
+End-to-end universal-link activation still requires:
 
-## Run the Sample
+- a real HTTPS host
+- an `apple-app-site-association` file served by that host
+- an `applinks:` Associated Domains entitlement on the app target
 
-1. Open:
-- `Sample App/SwiftNavigationSampleApp/SwiftNavigationSampleApp.xcodeproj`
-2. Select scheme:
-- `SwiftNavigationSampleApp`
-3. Run on iOS Simulator.
+The placeholder sample domain demonstrates the routing behavior, not live production association.
 
----
+## Tests And Verification
 
-## Suggested Reading Order in Code
+Package tests:
 
-1. `App/AppRoutes.swift`
-2. `App/AppCoordinator.swift`
-3. `App/AppRootView.swift`
-4. `Features/Characters/*`
-5. `Features/Explore/*`
-6. `Features/Modals/*`
-7. `Networking/RickMortyService.swift`
-8. `Networking/RickMortyModels.swift`
+```bash
+swift test
+```
 
-Following this order gives you the clearest top-down understanding of the MVVM-C flow.
+Sample app showcase tests:
+
+```bash
+xcodebuild \
+  -project 'Sample App/SwiftNavigationSampleApp/SwiftNavigationSampleApp.xcodeproj' \
+  -scheme SwiftNavigationSampleApp \
+  -destination 'platform=iOS Simulator,id=8DE52934-0BE7-4772-B5D7-EB91450783F8' \
+  -only-testing:SwiftNavigationSampleAppTests \
+  test
+```
+
+Those sample tests cover:
+
+- custom-scheme send-money parsing
+- `https` receipt parsing
+- login interception with pending-state resume
+- exact back navigation with duplicated amount routes

@@ -1,20 +1,24 @@
 # Quick Start
 
-Set up a coordinator, wrap your root view in `RoutingView`, and map typed routes to destinations.
+Set up a coordinator, wrap your root view in `RoutingView`, and map typed routes to stack, modal, and alert destinations.
 
 ## Define Routes
 
 ```swift
 import SwiftNavigation
 
-enum AppRoute: String, NavigationRoute {
+enum AppRoute: NavigationRoute {
     case profile
     case settings
 }
 
-enum AppModalRoute: String, NavigationRoute {
+enum AppModalRoute: NavigationRoute {
     case signIn
     case terms
+}
+
+enum AppAlertRoute: NavigationRoute {
+    case sessionExpired
 }
 ```
 
@@ -23,8 +27,15 @@ enum AppModalRoute: String, NavigationRoute {
 ```swift
 import SwiftNavigation
 
-@MainActor
-let coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(
+let coordinator = NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>(
+    scope: .application
+)
+```
+
+If you do not use global alerts, use `Never` and the no-alert `RoutingView` initializer:
+
+```swift
+let coordinator = NavigationCoordinator<AppRoute, AppModalRoute, Never>(
     scope: .application
 )
 ```
@@ -36,15 +47,26 @@ import SwiftUI
 import SwiftNavigation
 
 struct AppRootView: View {
-    @State private var coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .application)
+    @State private var coordinator = NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>(
+        scope: .application
+    )
 
     var body: some View {
         RoutingView(
             coordinator: coordinator,
             root: {
                 HomeView(
-                    onOpenProfile: { coordinator.push(.profile) },
-                    onOpenSignIn: { coordinator.present(.signIn, style: .sheet) }
+                    onOpenProfile: { _ = coordinator.push(.profile) },
+                    onOpenSignIn: {
+                        _ = coordinator.present(
+                            .signIn,
+                            style: .sheet,
+                            sheetPresentation: SheetPresentationOptions(
+                                detents: [.medium, .large],
+                                background: .regularMaterial
+                            )
+                        )
+                    }
                 )
             },
             stackDestination: { route in
@@ -62,6 +84,16 @@ struct AppRootView: View {
                 case .terms:
                     TermsView()
                 }
+            },
+            alertDestination: { alertRoute in
+                switch alertRoute {
+                case .sessionExpired:
+                    AlertDescriptor(
+                        title: "Session expired",
+                        message: "Please sign in again to continue.",
+                        actions: [.dismiss("OK")]
+                    )
+                }
             }
         )
         .navigationCoordinator(coordinator)
@@ -72,5 +104,7 @@ struct AppRootView: View {
 ## Next Steps
 
 - Use <doc:MVVMCoordinator> to keep ViewModels UI-framework agnostic.
+- Use <doc:AlertsAndSheets> to present alerts and customize sheets from the coordinator.
+- Use <doc:FlowBookmarks> to jump back to exact destinations when a flow repeats the same route.
 - Use <doc:StateRestoration> to persist and restore state snapshots.
-- Use <doc:DeepLinking> to reconstruct full navigation flows from external triggers.
+- Use <doc:DeepLinking>, <doc:DeepLinkInterception>, and <doc:UniversalLinks> to reconstruct full navigation flows from external triggers.

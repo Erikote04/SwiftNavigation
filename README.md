@@ -1,98 +1,95 @@
 # SwiftNavigation
 
-Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs (`NavigationStack`, `.sheet`, `.fullScreenCover`).
+Type-safe, coordinator-driven navigation for SwiftUI apps using only native APIs (`NavigationStack`, `.sheet`, `.fullScreenCover`, and `.alert`).
 
-[![Swift](https://img.shields.io/badge/Swift-6.1-orange.svg)](https://swift.org)
-[![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-blue.svg)](https://developer.apple.com/ios/)
+[![Swift](https://img.shields.io/badge/Swift-6-orange.svg)](https://swift.org)
+[![Platform](https://img.shields.io/badge/platform-iOS%2026%2B-blue.svg)](https://developer.apple.com/ios/)
 [![DocC Deploy](https://github.com/Erikote04/SwiftNavigation/actions/workflows/publish-docc.yml/badge.svg)](https://github.com/Erikote04/SwiftNavigation/actions/workflows/publish-docc.yml)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-2ea44f)](https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/)
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [MVVM-C Decoupling](#mvvm-c-decoupling)
-- [State Restoration](#state-restoration)
-- [Deep Linking](#deep-linking)
-- [Testing](#testing)
-- [Documentation](#documentation)
-
 ## Overview
 
-`SwiftNavigation` provides a modular MVVM-C navigation layer with:
+`SwiftNavigation` is an MVVM-C-friendly navigation layer built around entry-backed navigation state.
 
-- Pure SwiftUI navigation and presentation APIs.
-- `@Observable` + `@MainActor` coordinator state.
-- Type-safe stack operations over plain route arrays.
-- Nested modal flows with independent internal stacks.
-- Codable snapshots for restoration and deep-link reconstruction.
+- Every pushed or presented destination gets its own stable identity.
+- Root stacks, modal stacks, modal-internal paths, and global alerts all live in one coordinator.
+- Deep links can be intercepted asynchronously before they mutate navigation.
+- Universal links reuse the same URL resolver pipeline as custom schemes.
+- Codable snapshots remain compatible with older route-only state payloads.
 
 ## Key Features
 
-- Type-safe root stack (`[Route]`) with `push`, `pop`, `popToRoot`, and `popToRoute`.
-- Recursive modal navigation (`sheet` + `fullScreenCover`) with internal stack state per modal.
-- Automatic state sync when users dismiss modals via native gestures.
-- Scoped coordinators (`application`, `feature(name:)`, `tab(name:)`) and child lifecycle cleanup.
-- Protocol-based routing contracts to decouple ViewModels from SwiftUI.
-- Swift Testing-friendly architecture for deterministic navigation tests.
+- Entry-backed root navigation with `NavigationEntryID`, `push`, `popToEntry`, and duplicate-route safety.
+- Recursive modal flows with their own internal stacks and exact modal-path bookmarks.
+- Global typed alerts driven by `AlertPresentation`, `AlertDescriptor`, and `presentAlert`.
+- Sheet-specific presentation controls for detents, backgrounds, background interaction, and interactive dismissal.
+- Async external-navigation interception for login gates, redirects, and pending-state resume.
+- Protocol-based router proxies that keep ViewModels decoupled from SwiftUI.
 
 ## Requirements
 
-- iOS 17+
-- Swift 6.1+
-- Xcode 16+
+- iOS 26+
+- Swift 6 language mode
+- Xcode 16.4+
 
 ## Installation
 
 ### Xcode
 
-In Xcode:
-
 1. `File` -> `Add Packages...`
-2. Enter: `https://github.com/Erikote04/SwiftNavigation`
-3. Select `Up to Next Major Version` and set it to `1.0.2`
+2. Enter `https://github.com/Erikote04/SwiftNavigation`
+3. Select the `2.x` line
 4. Add the `SwiftNavigation` product to your target
 
 ### Package.swift
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Erikote04/SwiftNavigation", from: "1.0.2")
+    .package(url: "https://github.com/Erikote04/SwiftNavigation", from: "2.0.0")
 ]
 ```
 
 ## Quick Start
 
-### 1. Define Routes
+### 1. Define routes
 
 ```swift
 import SwiftNavigation
 
-enum AppRoute: String, NavigationRoute {
+enum AppRoute: NavigationRoute {
     case home
-    case detail
-    case settings
+    case paymentReview
 }
 
-enum AppModalRoute: String, NavigationRoute {
+enum AppModalRoute: NavigationRoute {
     case login
-    case terms
+}
+
+enum AppAlertRoute: NavigationRoute {
+    case networkError(String)
 }
 ```
 
-### 2. Create a Coordinator
+### 2. Create a coordinator
 
 ```swift
 import SwiftNavigation
 
 @MainActor
-let coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .application)
+let coordinator = NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>(
+    scope: .application
+)
 ```
 
-### 3. Build the Routing Container
+Apps without alerts can use `Never` as the third generic:
+
+```swift
+let coordinator = NavigationCoordinator<AppRoute, AppModalRoute, Never>(
+    scope: .application
+)
+```
+
+### 3. Build the routing container
 
 ```swift
 import SwiftUI
@@ -100,33 +97,50 @@ import SwiftNavigation
 
 @MainActor
 struct AppRootView: View {
-    @State private var coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .application)
+    @State private var coordinator = NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>(
+        scope: .application
+    )
 
     var body: some View {
         RoutingView(
             coordinator: coordinator,
             root: {
                 HomeView(
-                    onOpenDetail: { coordinator.push(.detail) },
-                    onOpenLogin: { coordinator.present(.login, style: .sheet) }
+                    onOpenReview: { _ = coordinator.push(.paymentReview) },
+                    onOpenLogin: {
+                        _ = coordinator.present(
+                            .login,
+                            style: .sheet,
+                            sheetPresentation: SheetPresentationOptions(
+                                detents: [.medium, .large],
+                                background: .regularMaterial
+                            )
+                        )
+                    }
                 )
             },
             stackDestination: { route in
                 switch route {
                 case .home:
-                    HomeView(onOpenDetail: {}, onOpenLogin: {})
-                case .detail:
-                    DetailView()
-                case .settings:
-                    SettingsView()
+                    HomeView(onOpenReview: {}, onOpenLogin: {})
+                case .paymentReview:
+                    PaymentReviewView()
                 }
             },
             modalDestination: { route in
                 switch route {
                 case .login:
                     LoginView()
-                case .terms:
-                    TermsView()
+                }
+            },
+            alertDestination: { route in
+                switch route {
+                case .networkError(let message):
+                    AlertDescriptor(
+                        title: "Something went wrong",
+                        message: message,
+                        actions: [.dismiss("OK")]
+                    )
                 }
             }
         )
@@ -135,36 +149,65 @@ struct AppRootView: View {
 }
 ```
 
-## MVVM-C Decoupling
+## Flow Bookmarks
 
-Create a feature-focused routing protocol and inject it into your ViewModel.
+`push(_:)` and modal-path pushes now return `NavigationEntryID`, so duplicate screens stay addressable.
 
 ```swift
-import SwiftNavigation
+let recipientEntryID = coordinator.push(.home)
+let reviewEntryID = coordinator.push(.paymentReview)
 
-@MainActor
-protocol AuthRouting: AnyObject {
-    func showTerms()
-    func finishLogin()
+coordinator.popToEntry(recipientEntryID)
+```
+
+Use the same pattern inside modal flows with `pushModalRoute(_:at:)`, `modalPathEntries(at:)`, and `popModalToEntry(_:at:)`.
+
+## Alerts and Sheets
+
+Present alerts from the coordinator instead of storing raw SwiftUI alert state in views:
+
+```swift
+coordinator.presentAlert(.networkError("The payment could not be completed."))
+```
+
+Customize sheets at presentation time:
+
+```swift
+_ = coordinator.present(
+    .login,
+    style: .sheet,
+    sheetPresentation: SheetPresentationOptions(
+        detents: [.medium, .large],
+        background: .thinMaterial,
+        backgroundInteraction: .enabledThrough(.medium),
+        interactiveDismissDisabled: true
+    )
+)
+```
+
+## Deep Linking and Interception
+
+Resolvers still rebuild full navigation snapshots, but v2 can now intercept them asynchronously before applying state.
+
+```swift
+try await coordinator.applyURLDeepLink(url, resolver: AppURLResolver()) { state in
+    guard sessionStore.isAuthenticated else {
+        return .redirect(
+            loginState: NavigationState(
+                modalStack: [.init(style: .sheet, root: .login)]
+            ),
+            pendingState: state
+        )
+    }
+
+    return .proceed
 }
+```
 
-@MainActor
-final class AuthRouter: AuthRouting {
-    private let router: NavigationRouterProxy<AppRoute, AppModalRoute>
+After sign-in succeeds:
 
-    init(coordinator: NavigationCoordinator<AppRoute, AppModalRoute>) {
-        self.router = NavigationRouterProxy(coordinator: coordinator)
-    }
-
-    func showTerms() {
-        router.present(.terms, style: .fullScreen)
-    }
-
-    func finishLogin() {
-        router.dismissTopModal()
-        router.push(.home)
-    }
-}
+```swift
+coordinator.resumePendingNavigation()
 ```
 
 ## State Restoration
@@ -174,53 +217,79 @@ let snapshot = coordinator.exportState()
 let data = try JSONEncoder().encode(snapshot)
 
 let restored = try JSONDecoder().decode(
-    NavigationState<AppRoute, AppModalRoute>.self,
+    NavigationState<AppRoute, AppModalRoute, AppAlertRoute>.self,
     from: data
 )
 
 coordinator.restore(from: restored)
 ```
 
-## Deep Linking
+Legacy v1 snapshots that only stored route arrays still decode. Missing entry IDs are synthesized during restore.
+
+## Universal Links
+
+Universal links are just regular `https` URLs passed through your resolver.
 
 ```swift
-import Foundation
-import SwiftNavigation
-
-struct URLResolver: URLDeepLinkResolving {
-    func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute> {
-        if url.host == "settings" {
-            return NavigationState(stack: [.home, .settings])
-        }
-        return NavigationState(stack: [.home])
+.onOpenURL { url in
+    Task {
+        try? await coordinator.applyURLDeepLink(url, resolver: AppURLResolver())
     }
 }
-
-try coordinator.applyURLDeepLink(URL(string: "myapp://settings")!, resolver: URLResolver())
+.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+    guard let url = activity.webpageURL else { return }
+    Task {
+        try? await coordinator.applyURLDeepLink(url, resolver: AppURLResolver())
+    }
+}
 ```
+
+`SwiftNavigation` handles URL-to-state reconstruction. Your app still owns the Associated Domains entitlement and the `apple-app-site-association` file.
 
 ## Testing
 
-The coordinator is designed for direct state assertions with Swift Testing.
+`SwiftNavigation` is designed for direct state assertions with Swift Testing.
 
 ```swift
 import Testing
 @testable import SwiftNavigation
 
+enum TestRoute: NavigationRoute {
+    case amount
+}
+
+enum TestModalRoute: NavigationRoute {
+    case login
+}
+
 @Test @MainActor
-func pushAndPop() {
-    let coordinator = NavigationCoordinator<AppRoute, AppModalRoute>(scope: .feature(name: "test"))
+func popToExactEntry() {
+    let coordinator = NavigationCoordinator<TestRoute, TestModalRoute, Never>(
+        scope: .feature(name: "test")
+    )
 
-    coordinator.push(.home)
-    coordinator.push(.detail)
-    #expect(coordinator.stack == [.home, .detail])
+    let first = coordinator.push(.amount)
+    _ = coordinator.push(.amount)
 
-    _ = coordinator.pop()
-    #expect(coordinator.stack == [.home])
+    coordinator.popToEntry(first)
+
+    #expect(coordinator.stack.count == 1)
 }
 ```
+
+## Sample App
+
+The sample app now includes a dedicated `Showcase` tab with:
+
+- a send-money flow that stores entry bookmarks for exact back navigation
+- sheet demos for detents, background styles, and background interaction
+- coordinator-driven alerts from root and modal contexts
+- login-gated deep links that resume pending destinations after sign-in
+- custom-scheme and `https` universal-link parsing through the same resolver pipeline
+
+See [Sample App/README.md](./Sample%20App/README.md) for concrete deep-link commands and the test command used to verify the showcase flow.
 
 ## Documentation
 
 - DocC site: [https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/](https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/)
-- CI workflow: [publish-docc.yml](https://github.com/Erikote04/SwiftNavigation/actions/workflows/publish-docc.yml)
+- See `Quick Start`, `Alerts and Sheets`, `Flow Bookmarks`, `Deep Link Interception`, `Universal Links`, and `Migration Guide` in the DocC catalog

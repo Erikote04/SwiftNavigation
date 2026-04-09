@@ -6,7 +6,8 @@
 
 - `StackRoute` and `ModalRoute` conform to ``NavigationRoute``.
 - ``NavigationRoute`` requires `Codable` and `Hashable`.
-- ``NavigationState`` includes both stack and nested modal state.
+- ``NavigationState`` includes entry-backed root stacks, nested modal state, and the active alert.
+- Legacy route-only snapshots still decode and synthesize missing entry identifiers.
 
 ## Save Snapshot
 
@@ -19,7 +20,7 @@ let data = try JSONEncoder().encode(snapshot)
 
 ```swift
 let snapshot = try JSONDecoder().decode(
-    NavigationState<AppRoute, AppModalRoute>.self,
+    NavigationState<AppRoute, AppModalRoute, AppAlertRoute>.self,
     from: data
 )
 
@@ -32,3 +33,5 @@ coordinator.restore(from: snapshot)
 - App relaunch continuation.
 - Crash-safe checkpointing.
 - UI test reproducibility for complex flows.
+
+`exportState()` intentionally captures current stack, modal, and alert state. Pending intercepted navigation is stored separately on the coordinator and can be managed with `resumePendingNavigation()` and `clearPendingNavigation()`.
