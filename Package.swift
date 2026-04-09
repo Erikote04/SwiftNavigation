@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftNavigation",
     platforms: [
-        .iOS("26.0")
+        .iOS(.v17)
     ],
     products: [
         .library(

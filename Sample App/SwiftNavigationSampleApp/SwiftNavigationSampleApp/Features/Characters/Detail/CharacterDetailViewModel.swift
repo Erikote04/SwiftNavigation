@@ -4,7 +4,6 @@ import Observation
 @MainActor
 @Observable
 final class CharacterDetailViewModel {
-    // MARK: - 2.4 ViewModel de detalle: reutiliza el router del feature para push/sheet/pop
 
     let route: CharacterRouteData
 
@@ -53,7 +52,6 @@ final class CharacterDetailViewModel {
         router?.showEpisodeDetail(episode)
     }
 
-    // MARK: - 2.4.1 Ejemplos de navegación desde el detalle (modal + navegación stack)
     func didTapActions() {
         router?.showCharacterActions(route)
     }

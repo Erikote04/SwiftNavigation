@@ -4,7 +4,6 @@ import Observation
 @MainActor
 @Observable
 final class LocationDetailViewModel {
-    // MARK: - 2.6 ViewModel de detalle (Locations): misma integración de routing por protocolo
 
     let route: LocationRouteData
 

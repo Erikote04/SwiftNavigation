@@ -2,10 +2,7 @@ import Foundation
 import UIKit
 import UserNotifications
 
-// MARK: - 5.3 Bridge UIKit (notificaciones): entrada externa hacia SwiftUI/AppCoordinator
-
 final class SampleAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // MARK: - 5.3.1 Registrar `UNUserNotificationCenterDelegate` al lanzar la app
 
     func application(
         _ application: UIApplication,
@@ -14,8 +11,6 @@ final class SampleAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUs
         UNUserNotificationCenter.current().delegate = self
         return true
     }
-
-    // MARK: - 5.3.2 Publicar evento interno para que `AppRootView` delegue en `AppCoordinator`
 
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,

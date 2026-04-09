@@ -1,8 +1,6 @@
 import Foundation
 import SwiftNavigation
 
-// MARK: - 2. Navegación por feature (Characters): definir una API de routing desacoplada del ViewModel
-
 @MainActor
 protocol CharactersRouting: AnyObject {
     func showCharacterDetail(_ character: CharacterRouteData)
@@ -14,12 +12,9 @@ protocol CharactersRouting: AnyObject {
 
 @MainActor
 final class CharactersCoordinator: CoordinatorLifecycle, CharactersRouting {
-    // MARK: - 2.1 Coordinator del feature: traduce acciones semánticas a push/present/pop de SwiftNavigation
 
     let coordinatorID: UUID = UUID()
     private let router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>
-
-    // MARK: - 2.1.1 Recibe el router compartido del coordinador de aplicación
 
     init(router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>) {
         self.router = router

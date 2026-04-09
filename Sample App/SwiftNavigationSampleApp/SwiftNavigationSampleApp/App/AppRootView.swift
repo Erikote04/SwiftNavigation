@@ -1,8 +1,6 @@
 import SwiftUI
 import SwiftNavigation
 
-// MARK: - 4. Montaje de UI con SwiftNavigation: `RoutingView` + destinos tipados
-
 private enum RootTab: Hashable {
     case characters
     case explore
@@ -33,13 +31,10 @@ struct AppRootView: View {
     @AppStorage("swiftNavigationSample.selectedRootTab")
     private var selectedTabStorage: String = "characters"
 
-    // MARK: - 4.1 Punto de entrada visual: conectar `RoutingView` con el `NavigationCoordinator` global
-
     var body: some View {
         RoutingView(
             coordinator: appCoordinator.navigationCoordinator,
             root: {
-                // MARK: - 4.2 Contenido raíz: tabs y toolbar (sin push manual aquí)
                 TabView(selection: selectedTabBinding) {
                     Tab("Characters", systemImage: "person.3.fill", value: .characters) {
                         CharactersListView(viewModel: appCoordinator.charactersViewModel)
@@ -64,7 +59,6 @@ struct AppRootView: View {
                 }
             },
             stackDestination: { route in
-                // MARK: - 4.3 Resolver rutas push (`AppRoute`) a pantallas concretas
                 switch route {
                 case .characterDetail(let character):
                     CharacterDetailView(
@@ -109,7 +103,6 @@ struct AppRootView: View {
                 }
             },
             modalDestination: { route in
-                // MARK: - 4.4 Resolver rutas modales (`AppModalRoute`) a sheets/fullScreen
                 switch route {
                 case .characterActions(let character):
                     CharacterActionsModalView(character: character)
@@ -189,9 +182,7 @@ struct AppRootView: View {
                 }
             }
         )
-        // MARK: - 4.5 Exponer el coordinator al árbol para APIs auxiliares de SwiftNavigation
         .navigationCoordinator(appCoordinator.navigationCoordinator)
-        // MARK: - 4.6 Entradas externas: URL deeplink y bridge de notificaciones
         .onOpenURL { url in
             handleIncomingURL(url)
         }
@@ -208,8 +199,6 @@ struct AppRootView: View {
             }
         }
     }
-
-    // MARK: - 4.7 Acciones raíz que delegan en ViewModels (y estos en coordinadores)
 
     @ToolbarContentBuilder
     private var rootToolbarContent: some ToolbarContent {

@@ -1,15 +1,11 @@
 import Foundation
 import SwiftNavigation
 
-// MARK: - 6. Deep Linking con SwiftNavigation: construir `NavigationState` desde URL/payloads
-
 enum AppDeepLinkPreferredRootTab: String {
     case characters
     case explore
     case showcase
 }
-
-// MARK: - 6.1 Tipos de soporte: errores de parsing para feedback en la UI
 
 enum AppDeepLinkError: LocalizedError {
     case unsupportedURLScheme(String?)
@@ -74,9 +70,8 @@ struct AppNotificationDeepLinkResolver: NotificationDeepLinkResolving {
 }
 
 extension Notification.Name {
-    // MARK: - 6.4 Evento interno para conectar UNUserNotificationCenter con SwiftUI/AppCoordinator
     /// Internal bridge notification posted by the sample `UNUserNotificationCenterDelegate`.
-    static let sampleAppNotificationDeepLinkReceived =
+    nonisolated static let sampleAppNotificationDeepLinkReceived =
         Notification.Name("SwiftNavigationSampleApp.notificationDeepLinkReceived")
 }
 
@@ -84,8 +79,6 @@ private struct ParsedAppDeepLink {
     let preferredRootTab: AppDeepLinkPreferredRootTab?
     let navigationState: NavigationState<AppRoute, AppModalRoute, Never>
 }
-
-// MARK: - 6.5 Parser central: traduce URLs/payloads a `NavigationState<AppRoute, AppModalRoute, Never>`
 
 private enum AppDeepLinkParser {
     private static let customSchemes = ["swiftnavsample", "swiftnavigationsample"]

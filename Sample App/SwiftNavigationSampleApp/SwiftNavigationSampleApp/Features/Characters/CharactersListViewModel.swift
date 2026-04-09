@@ -4,7 +4,6 @@ import Observation
 @MainActor
 @Observable
 final class CharactersListViewModel {
-    // MARK: - 2.3 ViewModel del feature: depende de `CharactersRouting`, no de SwiftNavigation directamente
 
     private let service: RickMortyService
     private weak var router: (any CharactersRouting)?
@@ -15,8 +14,6 @@ final class CharactersListViewModel {
     var errorMessage: String?
 
     private var nextPage: Int? = 1
-
-    // MARK: - 2.3.1 Inyección del router del feature (implementado por `CharactersCoordinator`)
 
     init(service: RickMortyService, router: any CharactersRouting) {
         self.service = service
@@ -47,8 +44,6 @@ final class CharactersListViewModel {
 
         await loadPage(number: nextPage, reset: false)
     }
-
-    // MARK: - 2.3.2 Acción de UI -> intención de navegación del feature
 
     func didTapCharacter(_ character: CharacterRouteData) {
         router?.showCharacterDetail(character)
