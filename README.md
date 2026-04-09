@@ -293,3 +293,9 @@ See [Sample App/README.md](./Sample%20App/README.md) for concrete deep-link comm
 
 - DocC site: [https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/](https://erikote04.github.io/SwiftNavigation/documentation/swiftnavigation/)
 - See `Quick Start`, `Alerts and Sheets`, `Flow Bookmarks`, `Deep Link Interception`, `Universal Links`, and `Migration Guide` in the DocC catalog
+
+## Community
+
+- Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
+- License: [LICENSE](./LICENSE)
+- Funding: GitHub Sponsors is configured through [`.github/FUNDING.yml`](./.github/FUNDING.yml)
