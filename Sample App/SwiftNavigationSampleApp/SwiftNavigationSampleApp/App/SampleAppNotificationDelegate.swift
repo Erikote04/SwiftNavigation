@@ -17,7 +17,7 @@ final class SampleAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUs
 
     // MARK: - 5.3.2 Publicar evento interno para que `AppRootView` delegue en `AppCoordinator`
 
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void

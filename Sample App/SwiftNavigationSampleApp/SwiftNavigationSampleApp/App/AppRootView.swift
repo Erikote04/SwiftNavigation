@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 import SwiftNavigation
 
@@ -7,11 +6,13 @@ import SwiftNavigation
 private enum RootTab: Hashable {
     case characters
     case explore
+    case showcase
     
     init?(storageValue: String) {
         switch storageValue {
         case "characters": self = .characters
         case "explore": self = .explore
+        case "showcase": self = .showcase
         default: return nil
         }
     }
@@ -20,6 +21,7 @@ private enum RootTab: Hashable {
         switch self {
         case .characters: "characters"
         case .explore: "explore"
+        case .showcase: "showcase"
         }
     }
 }
@@ -45,6 +47,13 @@ struct AppRootView: View {
 
                     Tab("Locations", systemImage: "globe", value: .explore) {
                         LocationsListView(viewModel: appCoordinator.locationsViewModel)
+                    }
+
+                    Tab("Showcase", systemImage: "sparkles.rectangle.stack", value: .showcase) {
+                        ShowcaseDashboardView(
+                            viewModel: appCoordinator.showcaseViewModel,
+                            sessionStore: appCoordinator.sessionStore
+                        )
                     }
                 }
                 .navigationTitle(rootNavigationTitle)
@@ -73,6 +82,30 @@ struct AppRootView: View {
                         service: appCoordinator.service,
                         router: appCoordinator.exploreCoordinator
                     )
+
+                case .sendMoneyRecipient(let route):
+                    SendMoneyRecipientView(
+                        route: route,
+                        viewModel: appCoordinator.sendMoneyFlowViewModel(for: route)
+                    )
+
+                case .sendMoneyAmount(let route):
+                    SendMoneyAmountView(
+                        route: route,
+                        viewModel: appCoordinator.sendMoneyFlowViewModel(for: route)
+                    )
+
+                case .sendMoneyReview(let route):
+                    SendMoneyReviewView(
+                        route: route,
+                        viewModel: appCoordinator.sendMoneyFlowViewModel(for: route)
+                    )
+
+                case .protectedReceipt(let route):
+                    ProtectedReceiptView(route: route)
+
+                case .protectedProfile(let route):
+                    ProtectedProfileView(route: route)
                 }
             },
             modalDestination: { route in
@@ -98,6 +131,61 @@ struct AppRootView: View {
 
                 case .about:
                     AboutModalView()
+
+                case .login(let route):
+                    LoginModalView(
+                        route: route,
+                        sessionStore: appCoordinator.sessionStore,
+                        onComplete: appCoordinator.completeLogin
+                    )
+
+                case .sheetShowcase(let route):
+                    SheetShowcaseModalView(route: route)
+
+                case .alertShowcase:
+                    AlertShowcaseModalView(
+                        onShowErrorAlert: {
+                            appCoordinator.showcaseCoordinator.showErrorAlert(
+                                "Modal-triggered alerts still flow through the root coordinator."
+                            )
+                        },
+                        onShowDiscardAlert: {
+                            appCoordinator.showcaseCoordinator.showDiscardDraftConfirmation(flowID: UUID())
+                        }
+                    )
+                }
+            },
+            alertDestination: { route in
+                switch route {
+                case .deepLinkError(let message):
+                    AlertDescriptor(
+                        title: "Deep Link Error",
+                        message: message,
+                        actions: [.dismiss("Dismiss")]
+                    )
+
+                case .showcaseError(let message):
+                    AlertDescriptor(
+                        title: "Showcase Alert",
+                        message: message,
+                        actions: [.dismiss("OK")]
+                    )
+
+                case .discardDraft(let flowID):
+                    AlertDescriptor(
+                        title: "Discard Draft?",
+                        message: "This clears the current Send Money flow and returns to the showcase root.",
+                        actions: [
+                            AlertAction(
+                                title: "Discard",
+                                role: .destructive,
+                                handler: {
+                                    appCoordinator.discardSendMoneyFlow(flowID)
+                                }
+                            ),
+                            .dismiss("Keep Editing", role: .cancel)
+                        ]
+                    )
                 }
             }
         )
@@ -105,29 +193,19 @@ struct AppRootView: View {
         .navigationCoordinator(appCoordinator.navigationCoordinator)
         // MARK: - 4.6 Entradas externas: URL deeplink y bridge de notificaciones
         .onOpenURL { url in
-            appCoordinator.handleDeepLinkURL(url)
+            handleIncomingURL(url)
+        }
+        .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+            handleIncomingURL(userActivity.webpageURL)
         }
         .onReceive(NotificationCenter.default.publisher(for: .sampleAppNotificationDeepLinkReceived)) { notification in
             guard let userInfo = notification.userInfo else {
                 return
             }
 
-            appCoordinator.handleNotificationDeepLink(userInfo: userInfo)
-        }
-        .alert(
-            "Deep Link Error",
-            isPresented: Binding(
-                get: { appCoordinator.deepLinkErrorMessage != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        appCoordinator.deepLinkErrorMessage = nil
-                    }
-                }
-            )
-        ) {
-            Button("Dismiss", role: .cancel) {}
-        } message: {
-            Text(appCoordinator.deepLinkErrorMessage ?? "Unknown deeplink error")
+            Task {
+                await appCoordinator.handleNotificationDeepLink(userInfo: userInfo)
+            }
         }
     }
 
@@ -151,6 +229,16 @@ struct AppRootView: View {
                     appCoordinator.locationsViewModel.didTapSettings()
                 }
             }
+
+        case .showcase:
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(
+                    appCoordinator.sessionStore.isAuthenticated ? "Expire Session" : "Sign In",
+                    systemImage: appCoordinator.sessionStore.isAuthenticated ? "lock.slash" : "person.badge.key"
+                ) {
+                    appCoordinator.showcaseViewModel.toggleSession()
+                }
+            }
         }
     }
 
@@ -160,6 +248,8 @@ struct AppRootView: View {
             "Characters"
         case .explore:
             "Locations"
+        case .showcase:
+            "Showcase"
         }
     }
 
@@ -172,5 +262,15 @@ struct AppRootView: View {
 
     private var selectedTab: RootTab {
         RootTab(storageValue: selectedTabStorage) ?? .characters
+    }
+
+    private func handleIncomingURL(_ url: URL?) {
+        guard let url else {
+            return
+        }
+
+        Task {
+            await appCoordinator.handleDeepLinkURL(url)
+        }
     }
 }

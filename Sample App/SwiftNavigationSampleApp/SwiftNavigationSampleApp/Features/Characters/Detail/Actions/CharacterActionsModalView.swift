@@ -5,7 +5,7 @@ struct CharacterActionsModalView: View {
     let character: CharacterRouteData
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(NavigationCoordinator<AppRoute, AppModalRoute>.self) private var coordinator
+    @Environment(NavigationCoordinator<AppRoute, AppModalRoute, AppAlertRoute>.self) private var coordinator
 
     var body: some View {
         List {

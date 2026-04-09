@@ -6,6 +6,7 @@ import SwiftNavigation
 enum AppDeepLinkPreferredRootTab: String {
     case characters
     case explore
+    case showcase
 }
 
 // MARK: - 6.1 Tipos de soporte: errores de parsing para feedback en la UI
@@ -17,35 +18,37 @@ enum AppDeepLinkError: LocalizedError {
     case invalidIdentifier(String)
     case missingNotificationField(String)
     case invalidURLString(String)
+    case invalidNumericValue(field: String, rawValue: String)
 
     var errorDescription: String? {
         switch self {
         case .unsupportedURLScheme(let scheme):
-            return "Unsupported deep link URL scheme: \(scheme ?? "nil")."
+            "Unsupported deep link URL scheme: \(scheme ?? "nil")."
         case .unsupportedTarget(let target):
-            return "Unsupported deep link target: \(target)."
+            "Unsupported deep link target: \(target)."
         case .missingIdentifier(let target):
-            return "Missing identifier for deep link target '\(target)'."
+            "Missing identifier for deep link target '\(target)'."
         case .invalidIdentifier(let rawValue):
-            return "Invalid deep link identifier: \(rawValue)."
+            "Invalid deep link identifier: \(rawValue)."
         case .missingNotificationField(let field):
-            return "Missing notification deep link field: \(field)."
+            "Missing notification deep link field: \(field)."
         case .invalidURLString(let rawValue):
-            return "Invalid deeplink URL string in notification payload: \(rawValue)."
+            "Invalid deeplink URL string in notification payload: \(rawValue)."
+        case .invalidNumericValue(let field, let rawValue):
+            "Invalid numeric value for \(field): \(rawValue)."
         }
     }
 }
 
-/// URL deeplink examples (URL scheme registration is intentionally not included in this sample):
+/// URL deeplink examples:
 /// - `swiftnavsample://characters`
-/// - `swiftnavsample://characters/1`
 /// - `swiftnavsample://characters/1?episode=28`
-/// - `swiftnavsample://characters/1?actions=1`
 /// - `swiftnavsample://locations/3?about=1`
-/// - `swiftnavsample://settings`
-// MARK: - 6.2 Resolver de URL: adapta el parser al protocolo `URLDeepLinkResolving`
+/// - `swiftnavsample://showcase/send-money`
+/// - `swiftnavsample://showcase/profile`
+/// - `https://demo.swiftnavigation.app/showcase/receipt?recipient=Sonia&amount=35`
 struct AppURLDeepLinkResolver: URLDeepLinkResolving {
-    func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute> {
+    func navigationState(for url: URL) throws -> NavigationState<AppRoute, AppModalRoute, Never> {
         try AppDeepLinkParser.parseURL(url).navigationState
     }
 
@@ -56,13 +59,12 @@ struct AppURLDeepLinkResolver: URLDeepLinkResolving {
 
 /// Notification deeplink payload examples:
 /// - `["target": "character", "id": 1]`
-/// - `["target": "character", "id": 1, "showActions": true]`
 /// - `["target": "location", "id": 3, "showAbout": true]`
-/// - `["target": "settings"]`
-/// - `["deeplink_url": "swiftnavsample://characters/1?episode=28"]`
-// MARK: - 6.3 Resolver de notificaciones: adapta payloads al protocolo `NotificationDeepLinkResolving`
+/// - `["target": "send-money", "recipient": "Sonia"]`
+/// - `["target": "profile", "displayName": "Sonia"]`
+/// - `["deeplink_url": "https://demo.swiftnavigation.app/showcase/profile"]`
 struct AppNotificationDeepLinkResolver: NotificationDeepLinkResolving {
-    func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<AppRoute, AppModalRoute> {
+    func navigationState(for userInfo: [AnyHashable: Any]) throws -> NavigationState<AppRoute, AppModalRoute, Never> {
         try AppDeepLinkParser.parseNotification(userInfo).navigationState
     }
 
@@ -80,15 +82,20 @@ extension Notification.Name {
 
 private struct ParsedAppDeepLink {
     let preferredRootTab: AppDeepLinkPreferredRootTab?
-    let navigationState: NavigationState<AppRoute, AppModalRoute>
+    let navigationState: NavigationState<AppRoute, AppModalRoute, Never>
 }
 
-// MARK: - 6.5 Parser central: traduce URLs/payloads a `NavigationState<AppRoute, AppModalRoute>`
+// MARK: - 6.5 Parser central: traduce URLs/payloads a `NavigationState<AppRoute, AppModalRoute, Never>`
 
 private enum AppDeepLinkParser {
+    private static let customSchemes = ["swiftnavsample", "swiftnavigationsample"]
+    private static let webSchemes = ["http", "https"]
+
     static func parseURL(_ url: URL) throws -> ParsedAppDeepLink {
-        let allowedSchemes = ["swiftnavsample", "swiftnavigationsample"]
-        if let scheme = url.scheme?.lowercased(), !scheme.isEmpty, !allowedSchemes.contains(scheme) {
+        if let scheme = url.scheme?.lowercased(),
+           !scheme.isEmpty,
+           !customSchemes.contains(scheme),
+           !webSchemes.contains(scheme) {
             throw AppDeepLinkError.unsupportedURLScheme(url.scheme)
         }
 
@@ -98,7 +105,7 @@ private enum AppDeepLinkParser {
 
         guard let target = segments.first?.lowercased() else {
             return ParsedAppDeepLink(
-                preferredRootTab: .characters,
+                preferredRootTab: defaultPreferredRootTab(for: url),
                 navigationState: NavigationState()
             )
         }
@@ -137,6 +144,12 @@ private enum AppDeepLinkParser {
                 navigationState: NavigationState(
                     modalStack: [.init(style: .sheet, root: .about)]
                 )
+            )
+
+        case "showcase":
+            return try showcaseDeepLink(
+                segments: segments.dropFirst(),
+                queryItems: queryItems
             )
 
         default:
@@ -222,12 +235,22 @@ private enum AppDeepLinkParser {
                 navigationState: NavigationState(modalStack: [.init(style: .sheet, root: .about)])
             )
 
+        case "showcase":
+            return try showcaseNotification(userInfo)
+
+        case "send-money", "sendmoney", "payment":
+            return try sendMoneyNotification(userInfo)
+
+        case "profile":
+            return try protectedProfileNotification(userInfo)
+
+        case "receipt":
+            return try protectedReceiptNotification(userInfo)
+
         default:
             throw AppDeepLinkError.unsupportedTarget(target)
         }
     }
-
-    // MARK: - 6.5.1 Builders por target (character/location) para stack + modal stack
 
     private static func characterDeepLink(
         idSegment: String?,
@@ -289,17 +312,152 @@ private enum AppDeepLinkParser {
         )
     }
 
-    // MARK: - 6.5.2 Helpers de parsing y factories de `RouteData`
+    private static func showcaseDeepLink(
+        segments: ArraySlice<String>,
+        queryItems: [URLQueryItem]
+    ) throws -> ParsedAppDeepLink {
+        guard let destination = segments.first?.lowercased() else {
+            return ParsedAppDeepLink(preferredRootTab: .showcase, navigationState: NavigationState())
+        }
+
+        switch destination {
+        case "send-money", "sendmoney", "payment", "bizum":
+            let recipient = stringQueryItem(named: "recipient", in: queryItems) ?? "Sonia"
+            let flowID = uuidQueryItem(named: "flowID", in: queryItems) ?? UUID()
+            let route = makeSendMoneyRecipientRoute(
+                flowID: flowID,
+                selectedRecipient: recipient
+            )
+            return ParsedAppDeepLink(
+                preferredRootTab: .showcase,
+                navigationState: NavigationState(stack: [.sendMoneyRecipient(route)])
+            )
+
+        case "profile":
+            let displayName = stringQueryItem(named: "displayName", in: queryItems)
+                ?? stringQueryItem(named: "recipient", in: queryItems)
+                ?? "Sonia"
+            let profileID = uuidQueryItem(named: "profileID", in: queryItems)
+            let route = makeProtectedProfileRoute(
+                profileID: profileID,
+                displayName: displayName
+            )
+            return ParsedAppDeepLink(
+                preferredRootTab: .showcase,
+                navigationState: NavigationState(stack: [.protectedProfile(route)])
+            )
+
+        case "receipt":
+            let recipient = stringQueryItem(named: "recipient", in: queryItems) ?? "Sonia"
+            let amount = try doubleQueryItem(named: "amount", in: queryItems) ?? 35
+            let flowID = uuidQueryItem(named: "flowID", in: queryItems) ?? UUID()
+            let reference = stringQueryItem(named: "reference", in: queryItems)
+                ?? makeReference(for: flowID)
+            let route = ProtectedReceiptRouteData(
+                flowID: flowID,
+                selectedRecipient: recipient,
+                amount: amount,
+                reference: reference
+            )
+            return ParsedAppDeepLink(
+                preferredRootTab: .showcase,
+                navigationState: NavigationState(stack: [.protectedReceipt(route)])
+            )
+
+        default:
+            throw AppDeepLinkError.unsupportedTarget(destination)
+        }
+    }
+
+    private static func showcaseNotification(_ userInfo: [AnyHashable: Any]) throws -> ParsedAppDeepLink {
+        guard let screen = try stringValue(forKey: "screen", in: userInfo) else {
+            return ParsedAppDeepLink(preferredRootTab: .showcase, navigationState: NavigationState())
+        }
+
+        switch screen.lowercased() {
+        case "send-money", "sendmoney", "payment":
+            return try sendMoneyNotification(userInfo)
+        case "profile":
+            return try protectedProfileNotification(userInfo)
+        case "receipt":
+            return try protectedReceiptNotification(userInfo)
+        default:
+            throw AppDeepLinkError.unsupportedTarget(screen)
+        }
+    }
+
+    private static func sendMoneyNotification(_ userInfo: [AnyHashable: Any]) throws -> ParsedAppDeepLink {
+        let recipient = try stringValue(forKey: "recipient", in: userInfo) ?? "Sonia"
+        let flowID = try uuidValue(forKey: "flowID", in: userInfo) ?? UUID()
+        let route = makeSendMoneyRecipientRoute(
+            flowID: flowID,
+            selectedRecipient: recipient
+        )
+
+        return ParsedAppDeepLink(
+            preferredRootTab: .showcase,
+            navigationState: NavigationState(stack: [.sendMoneyRecipient(route)])
+        )
+    }
+
+    private static func protectedProfileNotification(_ userInfo: [AnyHashable: Any]) throws -> ParsedAppDeepLink {
+        let displayName = try stringValue(forKey: "displayName", in: userInfo)
+            ?? stringValue(forKey: "recipient", in: userInfo)
+            ?? "Sonia"
+        let profileID = try uuidValue(forKey: "profileID", in: userInfo)
+        let route = makeProtectedProfileRoute(
+            profileID: profileID,
+            displayName: displayName
+        )
+
+        return ParsedAppDeepLink(
+            preferredRootTab: .showcase,
+            navigationState: NavigationState(stack: [.protectedProfile(route)])
+        )
+    }
+
+    private static func protectedReceiptNotification(_ userInfo: [AnyHashable: Any]) throws -> ParsedAppDeepLink {
+        let recipient = try stringValue(forKey: "recipient", in: userInfo) ?? "Sonia"
+        let amount = try doubleValue(forKey: "amount", in: userInfo) ?? 35
+        let flowID = try uuidValue(forKey: "flowID", in: userInfo) ?? UUID()
+        let reference = try stringValue(forKey: "reference", in: userInfo)
+            ?? makeReference(for: flowID)
+        let route = ProtectedReceiptRouteData(
+            flowID: flowID,
+            selectedRecipient: recipient,
+            amount: amount,
+            reference: reference
+        )
+
+        return ParsedAppDeepLink(
+            preferredRootTab: .showcase,
+            navigationState: NavigationState(stack: [.protectedReceipt(route)])
+        )
+    }
+
+    private static func defaultPreferredRootTab(for url: URL) -> AppDeepLinkPreferredRootTab {
+        switch url.scheme?.lowercased() {
+        case "http", "https":
+            .showcase
+        default:
+            .characters
+        }
+    }
 
     private static func normalizedSegments(from url: URL) -> [String] {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        let hostSegment = components?.host
         let pathSegments = (components?.path ?? "")
             .split(separator: "/")
             .map(String.init)
 
-        return ([hostSegment].compactMap { $0 } + pathSegments)
-            .filter { !$0.isEmpty }
+        switch url.scheme?.lowercased() {
+        case "http", "https":
+            return pathSegments.filter { !$0.isEmpty }
+        default:
+            let hostSegment = components?.host
+            return ([hostSegment].compactMap { $0 } + pathSegments)
+                .filter { !$0.isEmpty }
+        }
     }
 
     private static func parseRequiredID(_ rawValue: String?, target: String) throws -> Int {
@@ -343,6 +501,41 @@ private enum AppDeepLinkParser {
         )
     }
 
+    private static func makeSendMoneyRecipientRoute(
+        flowID: UUID,
+        selectedRecipient: String
+    ) -> SendMoneyRecipientRouteData {
+        SendMoneyRecipientRouteData(
+            flowID: flowID,
+            selectedRecipient: selectedRecipient,
+            availableRecipients: showcaseRecipients(selectedRecipient: selectedRecipient)
+        )
+    }
+
+    private static func makeProtectedProfileRoute(
+        profileID: UUID?,
+        displayName: String
+    ) -> ProtectedProfileRouteData {
+        ProtectedProfileRouteData(
+            profileID: profileID ?? UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE") ?? UUID(),
+            displayName: displayName,
+            subtitle: "This destination is protected to demonstrate deep-link login interception."
+        )
+    }
+
+    private static func showcaseRecipients(selectedRecipient: String) -> [String] {
+        let defaultRecipients = ["Sonia", "Alex", "Maya", "Taylor"]
+        guard !defaultRecipients.contains(selectedRecipient) else {
+            return defaultRecipients
+        }
+        return [selectedRecipient] + defaultRecipients
+    }
+
+    private static func makeReference(for flowID: UUID) -> String {
+        let compactID = flowID.uuidString.replacing("-", with: "")
+        return "BZM-\(compactID.prefix(6))"
+    }
+
     private static func stringQueryItem(named name: String, in items: [URLQueryItem]) -> String? {
         items.first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })?.value
     }
@@ -354,11 +547,28 @@ private enum AppDeepLinkParser {
         return Int(rawValue)
     }
 
+    private static func doubleQueryItem(named name: String, in items: [URLQueryItem]) throws -> Double? {
+        guard let rawValue = stringQueryItem(named: name, in: items) else {
+            return nil
+        }
+        guard let value = Double(rawValue) else {
+            throw AppDeepLinkError.invalidNumericValue(field: name, rawValue: rawValue)
+        }
+        return value
+    }
+
     private static func boolQueryItem(named name: String, in items: [URLQueryItem]) -> Bool? {
         guard let rawValue = stringQueryItem(named: name, in: items) else {
             return nil
         }
         return parseBool(rawValue)
+    }
+
+    private static func uuidQueryItem(named name: String, in items: [URLQueryItem]) -> UUID? {
+        guard let rawValue = stringQueryItem(named: name, in: items) else {
+            return nil
+        }
+        return UUID(uuidString: rawValue)
     }
 
     private static func stringValue(forKey key: String, in dictionary: [AnyHashable: Any]) throws -> String? {
@@ -400,6 +610,45 @@ private enum AppDeepLinkParser {
         throw AppDeepLinkError.missingNotificationField(key)
     }
 
+    private static func doubleValue(forKey key: String, in dictionary: [AnyHashable: Any]) throws -> Double? {
+        guard let value = dictionary[key] else {
+            return nil
+        }
+
+        if let doubleValue = value as? Double {
+            return doubleValue
+        }
+
+        if let intValue = value as? Int {
+            return Double(intValue)
+        }
+
+        if let numberValue = value as? NSNumber {
+            return numberValue.doubleValue
+        }
+
+        if let stringValue = value as? String {
+            guard let parsed = Double(stringValue) else {
+                throw AppDeepLinkError.invalidNumericValue(field: key, rawValue: stringValue)
+            }
+            return parsed
+        }
+
+        throw AppDeepLinkError.missingNotificationField(key)
+    }
+
+    private static func uuidValue(forKey key: String, in dictionary: [AnyHashable: Any]) throws -> UUID? {
+        guard let rawValue = try stringValue(forKey: key, in: dictionary) else {
+            return nil
+        }
+
+        guard let uuid = UUID(uuidString: rawValue) else {
+            throw AppDeepLinkError.invalidIdentifier(rawValue)
+        }
+
+        return uuid
+    }
+
     private static func boolValue(forKey key: String, in dictionary: [AnyHashable: Any]) -> Bool? {
         guard let value = dictionary[key] else {
             return nil
@@ -423,11 +672,11 @@ private enum AppDeepLinkParser {
     private static func parseBool(_ rawValue: String) -> Bool? {
         switch rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "1", "true", "yes", "y", "on":
-            return true
+            true
         case "0", "false", "no", "n", "off":
-            return false
+            false
         default:
-            return nil
+            nil
         }
     }
 }

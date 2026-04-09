@@ -15,11 +15,11 @@ final class LocationsCoordinator: CoordinatorLifecycle, LocationsRouting {
     // MARK: - 2.2.1 Convierte acciones del feature en rutas globales de SwiftNavigation
 
     let coordinatorID: UUID = UUID()
-    private let router: NavigationRouterProxy<AppRoute, AppModalRoute>
+    private let router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>
 
     // MARK: - 2.2.2 Inyección del router compartido
 
-    init(router: NavigationRouterProxy<AppRoute, AppModalRoute>) {
+    init(router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>) {
         self.router = router
     }
 
@@ -28,14 +28,14 @@ final class LocationsCoordinator: CoordinatorLifecycle, LocationsRouting {
     }
 
     func showLocationDetail(_ location: LocationRouteData) {
-        router.push(.locationDetail(location))
+        _ = router.push(.locationDetail(location))
     }
 
     func showSettings() {
-        router.present(.settings, style: .fullScreen)
+        _ = router.present(.settings, style: .fullScreen)
     }
 
     func showAbout() {
-        router.present(.about, style: .sheet)
+        _ = router.present(.about, style: .sheet)
     }
 }

@@ -13,12 +13,18 @@
 
 /* Begin PBXFileReference section */
 		BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftNavigationSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBA100012F70000100E58BC2 /* SwiftNavigationSampleAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftNavigationSampleAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BB5538202F4366B100E58BC2 /* SwiftNavigationSampleApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SwiftNavigationSampleApp;
+			sourceTree = "<group>";
+		};
+		BBA100022F70000100E58BC2 /* SwiftNavigationSampleAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SwiftNavigationSampleAppTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +39,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBA100032F70000100E58BC2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				BB5538202F4366B100E58BC2 /* SwiftNavigationSampleApp */,
+				BBA100022F70000100E58BC2 /* SwiftNavigationSampleAppTests */,
 				BB55381F2F4366B100E58BC2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */,
+				BBA100012F70000100E58BC2 /* SwiftNavigationSampleAppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +94,29 @@
 			productReference = BB55381E2F4366B100E58BC2 /* SwiftNavigationSampleApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BBA100042F70000100E58BC2 /* SwiftNavigationSampleAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBA100092F70000100E58BC2 /* Build configuration list for PBXNativeTarget "SwiftNavigationSampleAppTests" */;
+			buildPhases = (
+				BBA100072F70000100E58BC2 /* Sources */,
+				BBA100032F70000100E58BC2 /* Frameworks */,
+				BBA100062F70000100E58BC2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BBA100082F70000100E58BC2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BBA100022F70000100E58BC2 /* SwiftNavigationSampleAppTests */,
+			);
+			name = SwiftNavigationSampleAppTests;
+			packageProductDependencies = (
+			);
+			productName = SwiftNavigationSampleAppTests;
+			productReference = BBA100012F70000100E58BC2 /* SwiftNavigationSampleAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -92,6 +130,10 @@
 					BB55381D2F4366B100E58BC2 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
+					BBA100042F70000100E58BC2 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = BB55381D2F4366B100E58BC2;
+					};
 				};
 			};
 			buildConfigurationList = BB5538192F4366B100E58BC2 /* Build configuration list for PBXProject "SwiftNavigationSampleApp" */;
@@ -104,7 +146,7 @@
 			mainGroup = BB5538152F4366B100E58BC2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */,
+				BB57D4CB2F60AA61009BCE03 /* XCLocalSwiftPackageReference "../.." */,
 				BB57D4CE2F60AA8E009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -113,12 +155,20 @@
 			projectRoot = "";
 			targets = (
 				BB55381D2F4366B100E58BC2 /* SwiftNavigationSampleApp */,
+				BBA100042F70000100E58BC2 /* SwiftNavigationSampleAppTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		BB55381C2F4366B100E58BC2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBA100062F70000100E58BC2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +185,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBA100072F70000100E58BC2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		BBA100052F70000100E58BC2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB5538162F4366B100E58BC2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB55381D2F4366B100E58BC2;
+			remoteInfo = SwiftNavigationSampleApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		BBA100082F70000100E58BC2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB55381D2F4366B100E58BC2 /* SwiftNavigationSampleApp */;
+			targetProxy = BBA100052F70000100E58BC2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		BB5538272F4366B200E58BC2 /* Debug */ = {
@@ -286,7 +361,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -318,8 +393,52 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BBA1000A2F70000100E58BC2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PY53WPJ8K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.erikerice.SwiftNavigationSampleAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwiftNavigationSampleApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SwiftNavigationSampleApp";
+			};
+			name = Debug;
+		};
+		BBA1000B2F70000100E58BC2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9PY53WPJ8K;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.erikerice.SwiftNavigationSampleAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwiftNavigationSampleApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SwiftNavigationSampleApp";
 			};
 			name = Release;
 		};
@@ -344,17 +463,25 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		BBA100092F70000100E58BC2 /* Build configuration list for PBXNativeTarget "SwiftNavigationSampleAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBA1000A2F70000100E58BC2 /* Debug */,
+				BBA1000B2F70000100E58BC2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Erikote04/SwiftNavigation";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.2;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		BB57D4CB2F60AA61009BCE03 /* XCLocalSwiftPackageReference "../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../..;
 		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
 		BB57D4CE2F60AA8E009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Erikote04/SwiftNetwork";
@@ -368,7 +495,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		BB57D4CC2F60AA61009BCE03 /* SwiftNavigation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BB57D4CB2F60AA61009BCE03 /* XCRemoteSwiftPackageReference "SwiftNavigation" */;
+			package = BB57D4CB2F60AA61009BCE03 /* XCLocalSwiftPackageReference "../.." */;
 			productName = SwiftNavigation;
 		};
 		BB57D4CF2F60AA8E009BCE03 /* SwiftNetwork */ = {

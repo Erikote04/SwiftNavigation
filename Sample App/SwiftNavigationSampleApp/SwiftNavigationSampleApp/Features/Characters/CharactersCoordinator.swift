@@ -17,11 +17,11 @@ final class CharactersCoordinator: CoordinatorLifecycle, CharactersRouting {
     // MARK: - 2.1 Coordinator del feature: traduce acciones semánticas a push/present/pop de SwiftNavigation
 
     let coordinatorID: UUID = UUID()
-    private let router: NavigationRouterProxy<AppRoute, AppModalRoute>
+    private let router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>
 
     // MARK: - 2.1.1 Recibe el router compartido del coordinador de aplicación
 
-    init(router: NavigationRouterProxy<AppRoute, AppModalRoute>) {
+    init(router: NavigationRouterProxy<AppRoute, AppModalRoute, AppAlertRoute>) {
         self.router = router
     }
 
@@ -30,15 +30,15 @@ final class CharactersCoordinator: CoordinatorLifecycle, CharactersRouting {
     }
 
     func showCharacterDetail(_ character: CharacterRouteData) {
-        router.push(.characterDetail(character))
+        _ = router.push(.characterDetail(character))
     }
 
     func showEpisodeDetail(_ episode: EpisodeRouteData) {
-        router.push(.episodeDetail(episode))
+        _ = router.push(.episodeDetail(episode))
     }
 
     func showCharacterActions(_ character: CharacterRouteData) {
-        router.present(.characterActions(character), style: .sheet)
+        _ = router.present(.characterActions(character), style: .sheet)
     }
 
     func popCurrent() {

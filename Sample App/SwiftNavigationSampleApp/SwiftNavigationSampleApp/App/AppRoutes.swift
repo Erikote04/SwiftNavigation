@@ -28,12 +28,88 @@ struct LocationRouteData: NavigationRoute, Identifiable {
     let dimension: String
 }
 
+enum SendMoneyAmountEditorKind: String, Codable, Hashable, Sendable {
+    case primary
+    case duplicate
+
+    var title: String {
+        switch self {
+        case .primary:
+            "Primary amount"
+        case .duplicate:
+            "Duplicate amount"
+        }
+    }
+}
+
+struct SendMoneyRecipientRouteData: NavigationRoute {
+    let flowID: UUID
+    var selectedRecipient: String
+    let availableRecipients: [String]
+}
+
+struct SendMoneyAmountRouteData: NavigationRoute {
+    let flowID: UUID
+    let selectedRecipient: String
+    var amount: Double
+    let recipientEntryID: NavigationEntryID?
+    let editorKind: SendMoneyAmountEditorKind
+}
+
+struct SendMoneyReviewRouteData: NavigationRoute {
+    let flowID: UUID
+    let selectedRecipient: String
+    let primaryAmount: Double
+    let duplicateAmount: Double
+    let recipientEntryID: NavigationEntryID
+    let primaryAmountEntryID: NavigationEntryID
+    let duplicateAmountEntryID: NavigationEntryID
+}
+
+struct ProtectedReceiptRouteData: NavigationRoute {
+    let flowID: UUID
+    let selectedRecipient: String
+    let amount: Double
+    let reference: String
+}
+
+struct ProtectedProfileRouteData: NavigationRoute {
+    let profileID: UUID
+    let displayName: String
+    let subtitle: String
+}
+
+struct LoginRouteData: NavigationRoute {
+    let title: String
+    let message: String
+    let source: String
+    let isDismissDisabled: Bool
+}
+
+enum SheetShowcaseVariant: String, Codable, Hashable, Sendable {
+    case material
+    case clear
+}
+
+struct SheetShowcaseRouteData: NavigationRoute {
+    let title: String
+    let subtitle: String
+    let details: String
+    let variant: SheetShowcaseVariant
+    let systemImage: String
+}
+
 // MARK: - 1.2 Rutas de stack (push) de toda la app
 
 enum AppRoute: NavigationRoute {
     case characterDetail(CharacterRouteData)
     case episodeDetail(EpisodeRouteData)
     case locationDetail(LocationRouteData)
+    case sendMoneyRecipient(SendMoneyRecipientRouteData)
+    case sendMoneyAmount(SendMoneyAmountRouteData)
+    case sendMoneyReview(SendMoneyReviewRouteData)
+    case protectedReceipt(ProtectedReceiptRouteData)
+    case protectedProfile(ProtectedProfileRouteData)
 }
 
 // MARK: - 1.3 Rutas modales (sheet/fullScreen) de toda la app
@@ -46,4 +122,15 @@ enum AppModalRoute: NavigationRoute {
     case plannerConfirmation(CharacterRouteData)
     case settings
     case about
+    case login(LoginRouteData)
+    case sheetShowcase(SheetShowcaseRouteData)
+    case alertShowcase
+}
+
+// MARK: - 1.4 Rutas de alertas globales
+
+enum AppAlertRoute: NavigationRoute {
+    case deepLinkError(String)
+    case showcaseError(String)
+    case discardDraft(UUID)
 }
