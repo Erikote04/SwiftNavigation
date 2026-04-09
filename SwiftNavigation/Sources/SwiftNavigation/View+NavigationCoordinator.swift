@@ -6,8 +6,12 @@ public extension View {
     ///
     /// - Parameter coordinator: Coordinator instance to expose through environment lookup.
     /// - Returns: A view that provides the coordinator to its descendant hierarchy.
-    func navigationCoordinator<StackRoute: NavigationRoute, ModalRoute: NavigationRoute>(
-        _ coordinator: NavigationCoordinator<StackRoute, ModalRoute>
+    func navigationCoordinator<
+        StackRoute: NavigationRoute,
+        ModalRoute: NavigationRoute,
+        AlertRoute: NavigationRoute
+    >(
+        _ coordinator: NavigationCoordinator<StackRoute, ModalRoute, AlertRoute>
     ) -> some View {
         environment(coordinator)
     }
