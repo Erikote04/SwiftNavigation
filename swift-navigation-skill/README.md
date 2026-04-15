@@ -17,7 +17,7 @@ This skill distills the library README, DocC guides, and maintained integration 
 Install this skill from the SwiftNavigation repository:
 
 ```bash
-npx skills add https://github.com/Erikote04/SwiftNavigation --skill skill
+npx skills add https://github.com/erikote04/SwiftNavigation --skill swift-navigation-skill
 ```
 
 Then use the skill in your AI agent, for example:
